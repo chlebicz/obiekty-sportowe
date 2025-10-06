@@ -5,6 +5,9 @@ An interactive web application that aggregates data about sports facilities from
 ## Usage
 Check out [client's](client/README.md) and [server's](server/README.md) README files.
 
+## Live version
+Check out [the live version](https://obiekty-sportowe.netlify.app/). It might take a minute before the website starts fully working on first load as the API is hosted on a free service.
+
 ## Technologies used
 ### Server
 - PostgreSQL (with PostGIS for spatial queries and pg_trgm for fuzzy text search), TypeORM for querying from Nest
