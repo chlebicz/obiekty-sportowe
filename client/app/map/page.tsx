@@ -28,10 +28,10 @@ export default function MapPage() {
   ] = useState<string[]>([]);
   const [selectedCards, setSelectedCards] = useState<string[]>([]);
 
+  const [isLeftPanelVisible, setIsLeftPanelVisible] = useState(false);
+
   return (
     <main className='flex flex-col h-screen w-full'>
-      <Navbar />
-
       <ServicesProvider>
         <DataContext.Provider value={{
           selectedFacility, setSelectedFacility,
@@ -45,8 +45,11 @@ export default function MapPage() {
             selectedCards, setSelectedCards,
 
             sortingOption, setSortingOption
-          }
+          },
+          isLeftPanelVisible, setIsLeftPanelVisible
         }}>
+          <Navbar />
+
           <div className='flex flex-1 min-h-0'>
             <LeftPanel />
             <MapContents />

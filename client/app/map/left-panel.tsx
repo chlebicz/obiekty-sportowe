@@ -9,11 +9,15 @@ export enum View {
 }
 
 export default function LeftPanel() {
-  const { selectedFacility } = useContext(DataContext);
+  const { selectedFacility, isLeftPanelVisible } = useContext(DataContext);
 
   return (
     <div
-      className='w-[500px] bg-white shadow-md flex flex-col overflow-y-auto'
+      className={
+        'w-full max-w-[400px] bg-white shadow-md flex-col overflow-y-auto'
+          + (isLeftPanelVisible ? ' flex' : ' hidden')
+          + ' lg:flex'
+      }
     >
       {
         !selectedFacility

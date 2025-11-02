@@ -1,10 +1,48 @@
+import React, { useContext, useState } from 'react';
+import { DataContext } from './data-context';
+
+function HamburgerLine({ className }: { className: string }) {
+  return (
+    <span
+      className={`bg-white transition-all duration-300 ease-out 
+        h-0.5 w-6 my-0.5 rounded-sm ${className}`}
+    ></span>
+  );
+}
+
+function HamburgerMenuIcon({ isOpen, onClick, className }: {
+  isOpen: boolean, onClick: React.MouseEventHandler, className?: string
+}) {
+  return (
+    <button
+      className={
+        'flex flex-col justify-center cursor-pointer ' + (className || '')
+      }
+      onClick={onClick}
+    >
+      <HamburgerLine className={isOpen ? 'translate-y-1.5 rotate-45' : ''} />
+      <HamburgerLine className={isOpen ? 'opacity-0' : 'opacity-100'} />
+      <HamburgerLine className={isOpen ? '-translate-y-1.5 -rotate-45' : ''} />
+    </button>
+  );
+};
+
 export default function Navbar() {
+  const {
+    isLeftPanelVisible, setIsLeftPanelVisible
+  } = useContext(DataContext);
+
   return (
     <nav className='bg-blue-600 text-white px-6 py-4 shadow-md'>
       <div className='flex items-center justify-between'>
+        <HamburgerMenuIcon
+          isOpen={isLeftPanelVisible}
+          onClick={() => setIsLeftPanelVisible(!isLeftPanelVisible)}
+          className='block lg:hidden' />
+
         <h1 className='text-lg'>Obiekty sportowe</h1>
 
-        <div className='flex gap-6 text-sm font-medium'>
+        <div className='hidden lg:flex gap-6 text-sm font-medium'>
           <a
             href='https://github.com/polishchlieb'
             target='_blank'

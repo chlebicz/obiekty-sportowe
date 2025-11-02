@@ -13,5 +13,7 @@ export const DataContext = createContext<{
     setSelectedServiceTypes: SetState<string[]>,
     setSelectedCards: SetState<string[]>,
     setSortingOption: SetState<SortingOption>,
-  }
+  },
+  isLeftPanelVisible: boolean,
+  setIsLeftPanelVisible: SetState<boolean>;
 }>({} as any);
