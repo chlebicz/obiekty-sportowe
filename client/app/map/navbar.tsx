@@ -44,7 +44,7 @@ export default function Navbar() {
 
         <div className='hidden lg:flex gap-6 text-sm font-medium'>
           <a
-            href='https://github.com/polishchlieb'
+            href='https://github.com/chlebicz'
             target='_blank'
             rel='noopener noreferrer'
             className='hover:text-blue-300 transition-colors'
@@ -52,7 +52,7 @@ export default function Navbar() {
             Autor
           </a>
           <a
-            href='https://github.com/polishchlieb/obiekty-sportowe'
+            href='https://github.com/chlebicz/obiekty-sportowe'
             target='_blank'
             rel='noopener noreferrer'
             className='hover:text-blue-300 transition-colors'
