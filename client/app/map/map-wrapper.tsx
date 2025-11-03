@@ -10,44 +10,6 @@ import {
 } from 'react-leaflet';
 import useUpdateEffect from '../hooks/useUpdateEffect';
 
-async function rsToHTML(rs: ReadableStream) {
-  const reader = rs.getReader();
-  let html = '';
-  while (true) {
-    const { value, done } = await reader.read();
-    if (value) {
-      html += new TextDecoder().decode(value);
-    }
-    if (done) {
-      return html;
-    }
-  }
-}
-
-function renderToString(children: React.ReactNode) {
-  return renderToReadableStream(children)
-    .then(rsToHTML);
-}
-
-export function CustomMarker({ children, ...props }: {
-  children: React.ReactNode
-} & MarkerProps) {
-  const [icon, setIcon] = useState<DivIcon>();
-
-  useEffect(() => {
-    async function run() {
-      setIcon(divIcon({
-        html: await renderToString(children),
-        className: ''
-      }));
-    }
-
-    run();
-  }, [children]);
-
-  return icon ? <LeafletMarker {...props} icon={icon} /> : null;
-}
-
 export default function MapWrapper({
   children,
   zoom,

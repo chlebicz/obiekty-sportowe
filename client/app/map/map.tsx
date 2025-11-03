@@ -3,8 +3,8 @@ import useLocation from '../hooks/useLocation';
 import {
   Marker as LeafletMarker, useMap
 } from 'react-leaflet';
-import { divIcon, LeafletEvent, Map, ResizeEvent } from 'leaflet';
-import MapWrapper, { CustomMarker } from './map-wrapper';
+import { divIcon, LeafletEvent, ResizeEvent } from 'leaflet';
+import MapWrapper from './map-wrapper';
 import { DataContext } from './data-context';
 import {
   FacilityCluster, FacilitySingleton, isSingleton, MapObj
