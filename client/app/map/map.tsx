@@ -3,7 +3,7 @@ import useLocation from '../hooks/useLocation';
 import {
   Marker as LeafletMarker, useMap
 } from 'react-leaflet';
-import { LeafletEvent, Map, ResizeEvent } from 'leaflet';
+import { divIcon, LeafletEvent, Map, ResizeEvent } from 'leaflet';
 import MapWrapper, { CustomMarker } from './map-wrapper';
 import { DataContext } from './data-context';
 import {
@@ -29,22 +29,38 @@ function ClusterMarker({ cluster }: { cluster: FacilityCluster }) {
     map.setView(location, map.getZoom() + 1);
   }
 
+  // return (
+  //   <CustomMarker
+  //     position={cluster.location}
+  //     eventHandlers={{
+  //       click: handleClick
+  //     }}
+  //   >
+  //     <div
+  //       className={`
+  //         rounded-full bg-white border-4 border-[#4698d0] w-10 h-10 flex
+  //         items-center justify-center cursor-pointer font-bold text-[15px]
+  //       `}
+  //     >
+  //       {cluster.count}
+  //     </div>
+  //   </CustomMarker>
+  // );
   return (
-    <CustomMarker
+    <LeafletMarker
       position={cluster.location}
       eventHandlers={{
         click: handleClick
       }}
-    >
-      <div
-        className={`
-          rounded-full bg-white border-4 border-[#4698d0] w-10 h-10 flex
-          items-center justify-center cursor-pointer font-bold text-[15px]
-        `}
-      >
-        {cluster.count}
-      </div>
-    </CustomMarker>
+      icon={divIcon({
+        html: `
+          <div class='rounded-full bg-white border-4 border-[#4698d0] w-10 h-10 flex items-center justify-center cursor-pointer font-bold text-[15px]'>
+            ${cluster.count}
+          </div>
+        `,
+        className: ''
+      })}
+    />
   );
 }
 
