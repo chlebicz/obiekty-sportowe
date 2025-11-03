@@ -52,7 +52,7 @@ export default function SearchFilters() {
   return (
     <div className='mb-4 w-full relative'>
       <div className='flex items-center justify-between mb-2'>
-        <h3 className='font-semibold'>Filtry</h3>
+        <h3 className='text-black font-semibold'>Filtry</h3>
 
         <button
           className={`

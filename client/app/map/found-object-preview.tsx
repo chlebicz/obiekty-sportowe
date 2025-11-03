@@ -18,7 +18,7 @@ export default function FoundObjectPreview({ data }: { data: Facility }) {
       onClick={() => setSelectedFacility(data.id)}
     >
       <div className='flex flex-col gap-1'>
-        <h3 className='font-medium'>{data.name}</h3>
+        <h3 className='text-black font-medium'>{data.name}</h3>
         <p className='text-sm text-gray-500'>{data.shortAddress}</p>
         <p className={
           'text-sm ' + (isOpen ? 'text-green-600' : 'text-red-600')

@@ -18,9 +18,9 @@ function TextSection({ header, children }: {
   header: string, children: React.ReactNode
 }) {
   return (
-    <div className='p-4 space-y-3 flex-1'>
+    <div className='p-4 space-y-3 flex-1 text-gray-800'>
       <div>
-        <h3 className='text-sm font-semibold text-gray-600 uppercase'>
+        <h3 className='text-sm font-semibold uppercase'>
           {header}
         </h3>
         {children}
@@ -114,12 +114,12 @@ function FacilityInfo({ data }: { data: Facility }) {
 
       {data.website &&
           <TextSection header='Strona internetowa'>
-          <a href={data.website}>{data.website}</a>
+          <a href={data.website} className='text-gray-800'>{data.website}</a>
         </TextSection>}
 
       {data.fanpage &&
         <TextSection header='Fanpage'>
-          <a href={data.fanpage}>{data.fanpage}</a>
+          <a href={data.fanpage} className='text-gray-800'>{data.fanpage}</a>
         </TextSection>}
 
       {data.description &&

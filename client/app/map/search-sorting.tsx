@@ -9,7 +9,7 @@ export default function SearchSorting() {
 
   return (
     <div>
-      <h3 className='font-semibold mb-2'>Sortuj według</h3>
+      <h3 className='text-black font-semibold mb-2'>Sortuj według</h3>
       <select
         className='w-full border rounded-lg px-3 py-2.5 text-sm
           text-gray-700 focus:outline-none focus:ring-2
