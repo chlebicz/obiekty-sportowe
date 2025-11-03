@@ -50,10 +50,14 @@ function ClusterMarker({ cluster }: { cluster: FacilityCluster }) {
 }
 
 function SingletonMarker({ object }: { object: FacilitySingleton }) {
-  const { setSelectedFacility } = useContext(DataContext);
+  const {
+    setSelectedFacility, setIsLeftPanelVisible
+  } = useContext(DataContext);
 
-  const handleClick = () =>
+  const handleClick = () => {
     setSelectedFacility!(object.id);
+    setIsLeftPanelVisible(true);
+  }
 
   return (
     <LeafletMarker
