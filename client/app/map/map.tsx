@@ -19,6 +19,12 @@ function getMarkerKey(obj: MapObj) {
   return `${lng},${lat}`;
 }
 
+function getClusterMarkerHTML(displayNumber: number) {
+  return `<div class='rounded-full bg-white border-4 border-[#4698d0] w-10 `
+    + `h-10 flex items-center justify-center cursor-pointer font-bold `
+    + `text-black text-[15px]'>${displayNumber}</div>`;
+}
+
 function ClusterMarker({ cluster }: { cluster: FacilityCluster }) {
   const map = useMap();
 
@@ -29,23 +35,6 @@ function ClusterMarker({ cluster }: { cluster: FacilityCluster }) {
     map.setView(location, map.getZoom() + 1);
   }
 
-  // return (
-  //   <CustomMarker
-  //     position={cluster.location}
-  //     eventHandlers={{
-  //       click: handleClick
-  //     }}
-  //   >
-  //     <div
-  //       className={`
-  //         rounded-full bg-white border-4 border-[#4698d0] w-10 h-10 flex
-  //         items-center justify-center cursor-pointer font-bold text-[15px]
-  //       `}
-  //     >
-  //       {cluster.count}
-  //     </div>
-  //   </CustomMarker>
-  // );
   return (
     <LeafletMarker
       position={cluster.location}
@@ -53,11 +42,7 @@ function ClusterMarker({ cluster }: { cluster: FacilityCluster }) {
         click: handleClick
       }}
       icon={divIcon({
-        html: `
-          <div class='rounded-full bg-white border-4 border-[#4698d0] w-10 h-10 flex items-center justify-center cursor-pointer font-bold text-[15px]'>
-            ${cluster.count}
-          </div>
-        `,
+        html: getClusterMarkerHTML(cluster.count),
         className: ''
       })}
     />
