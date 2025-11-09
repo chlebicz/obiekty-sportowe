@@ -1,3 +1,65 @@
 {
-  
+  "FacilityInfo": {
+    "goBack": "Wróć do listy",
+    "goBackShort": "Wróć",
+    "navigate": "Nawiguj",
+    "services": "Usługi",
+    "cards": "Karty",
+    "contact": "Kontakt",
+    "phoneNumber": "Numer telefonu",
+    "email": "E-mail",
+    "website": "Strona internetowa",
+    "fanpage": "Fanpage",
+    "description": "Opis",
+    "openHours": "Godziny otwarcia",
+    "loading": "Ładowanie...",
+    "monday": "Poniedziałek",
+    "tuesday": "Wtorek",
+    "wednesday": "Środa",
+    "thursday": "Czwartek",
+    "friday": "Piątek",
+    "saturday": "Sobota",
+    "sunday": "Niedziela"
+  },
+  "FilterSelector": {
+    "noResults": "Brak wyników",
+    "filters": "Filtry",
+    "services": "Usługi",
+    "cards": "Karty",
+    "searchFilters": "Szukaj filtrów..."
+  },
+  "FoundObjectPreview": {
+    "openNow": "Otwarte",
+    "closedNow": "Zamknięte",
+    "navigate": "Nawiguj",
+    "moreInfo": "Więcej informacji"
+  },
+  "ImageGallery": {
+    "noImages": "Brak zdjęć :("
+  },
+  "Navbar": {
+    "sportsFacilities": "Obiekty sportowe",
+    "author": "Autor",
+    "github": "GitHub"
+  },
+  "SearchFilters": {
+    "filters": "Filtry",
+    "clear": "Wyczyść",
+    "add": "Dodaj"
+  },
+  "SearchInput": {
+    "noResults": "Brak wyników",
+    "loading": "Ładowanie...",
+    "search": "Szukaj..."
+  },
+  "SearchResults": {
+    "foundObjects": "Znalezione obiekty",
+    "noResults": "Nie znaleziono obiektów spełniających wszystkie filtry :("
+  },
+  "SearchSorting": {
+    "sortBy": "Sortuj według",
+    "name": "Nazwa",
+    "distance": "Odległość",
+    "rating": "Ocena"
+  }
 }

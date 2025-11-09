@@ -1,8 +1,10 @@
 import { useContext } from 'react';
 import { Facility } from '../lib/model/facility';
 import { DataContext } from './data-context';
+import { useTranslations } from 'next-intl';
 
 export default function FoundObjectPreview({ data }: { data: Facility }) {
+  const t = useTranslations('FoundObjectPreview');
   const { setSelectedFacility } = useContext(DataContext);
 
   const navigateLink = data.getNavigateLink();
@@ -22,7 +24,7 @@ export default function FoundObjectPreview({ data }: { data: Facility }) {
         <p className='text-sm text-gray-500'>{data.shortAddress}</p>
         <p className={
           'text-sm ' + (isOpen ? 'text-green-600' : 'text-red-600')
-        }>{isOpen ? 'Otwarte' : 'Zamknięte'}</p>
+        }>{isOpen ? t('openNow') : t('closedNow')}</p>
 
         <div className='flex gap-2 mt-2'>
           <button
@@ -32,7 +34,7 @@ export default function FoundObjectPreview({ data }: { data: Facility }) {
             `}
             onClick={() => window.open(navigateLink)}
           >
-            Nawiguj
+            {t('navigate')}
           </button>
           <button
             className={`
@@ -42,7 +44,7 @@ export default function FoundObjectPreview({ data }: { data: Facility }) {
             `}
             onClick={() => setSelectedFacility(data.id)}
           >
-            Więcej informacji
+            {t('moreInfo')}
           </button>
         </div>
       </div>

@@ -2,6 +2,7 @@ import { useContext, useRef, useState } from 'react';
 import { DataContext } from './data-context';
 import useAllParams from '../hooks/useAllParams';
 import FilterSelector from './filter-selector';
+import { useTranslations } from 'next-intl';
 
 function FilterItem({ item, onClick }: {
   item: string, onClick: () => any
@@ -29,6 +30,8 @@ function FilterItem({ item, onClick }: {
 }
 
 export default function SearchFilters() {
+  const t = useTranslations('SearchFilters');
+
   const { searchParams: {
     setSearchValue,
     setSelectedFilters,
@@ -52,7 +55,7 @@ export default function SearchFilters() {
   return (
     <div className='mb-4 w-full relative'>
       <div className='flex items-center justify-between mb-2'>
-        <h3 className='text-black font-semibold'>Filtry</h3>
+        <h3 className='text-black font-semibold'>{t('filters')}</h3>
 
         <button
           className={`
@@ -61,7 +64,7 @@ export default function SearchFilters() {
           `}
           onClick={clearSearchParams}
         >
-          Wyczyść
+          {t('clear')}
         </button>
       </div>
 
@@ -82,7 +85,7 @@ export default function SearchFilters() {
           onClick={() => setIsOpen(!isOpen)}
           ref={buttonRef}
         >
-          + Dodaj
+          + {t('add')}
         </button>
       </div>
 

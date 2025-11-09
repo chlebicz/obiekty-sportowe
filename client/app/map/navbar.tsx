@@ -1,5 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { DataContext } from './data-context';
+import { useTranslations } from 'next-intl';
 
 function HamburgerLine({ className }: { className: string }) {
   return (
@@ -28,6 +29,7 @@ function HamburgerMenuIcon({ isOpen, onClick, className }: {
 };
 
 export default function Navbar() {
+  const t = useTranslations('Navbar');
   const {
     isLeftPanelVisible, setIsLeftPanelVisible
   } = useContext(DataContext);
@@ -40,7 +42,7 @@ export default function Navbar() {
           onClick={() => setIsLeftPanelVisible(!isLeftPanelVisible)}
           className='block lg:hidden' />
 
-        <h1 className='text-lg'>Obiekty sportowe</h1>
+        <h1 className='text-lg'>{t('sportsFacilities')}</h1>
 
         <div className='hidden lg:flex gap-6 text-sm font-medium'>
           <a
@@ -49,7 +51,7 @@ export default function Navbar() {
             rel='noopener noreferrer'
             className='hover:text-blue-300 transition-colors'
           >
-            Autor
+            {t('author')}
           </a>
           <a
             href='https://github.com/chlebicz/obiekty-sportowe'
@@ -57,7 +59,7 @@ export default function Navbar() {
             rel='noopener noreferrer'
             className='hover:text-blue-300 transition-colors'
           >
-            GitHub
+            {t('github')}
           </a>
         </div>
       </div>

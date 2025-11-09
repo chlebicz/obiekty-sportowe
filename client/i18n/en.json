@@ -1,3 +1,65 @@
 {
-  
+  "FacilityInfo": {
+    "goBack": "Go back",
+    "goBackShort": "Go back",
+    "navigate": "Navigate",
+    "services": "Services",
+    "cards": "Cards",
+    "contact": "Contact",
+    "phoneNumber": "Phone Number",
+    "email": "Email",
+    "website": "Website",
+    "fanpage": "Fanpage",
+    "description": "Description",
+    "openHours": "Open Hours",
+    "loading": "Loading...",
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday": "Saturday",
+    "sunday": "Sunday"
+  },
+  "FilterSelector": {
+    "noResults": "No results",
+    "filters": "Filters",
+    "services": "Services",
+    "cards": "Cards",
+    "searchFilters": "Search filters..."
+  },
+  "FoundObjectPreview": {
+    "openNow": "Open now",
+    "closedNow": "Closed",
+    "navigate": "Navigate",
+    "moreInfo": "More info"
+  },
+  "ImageGallery": {
+    "noImages": "No images provided :("
+  },
+  "Navbar": {
+    "sportsFacilities": "Sports facilities",
+    "author": "Author",
+    "github": "GitHub"
+  },
+  "SearchFilters": {
+    "filters": "Filters",
+    "clear": "Clear",
+    "add": "Add"
+  },
+  "SearchInput": {
+    "noResults": "No results",
+    "loading": "Loading...",
+    "search": "Search..."
+  },
+  "SearchResults": {
+    "foundObjects": "Found facilities",
+    "noResults": "There are no facilities that satisfy all filters :("
+  },
+  "SearchSorting": {
+    "sortBy": "Sort by",
+    "name": "Name",
+    "distance": "Distance",
+    "rating": "Rating"
+  }
 }

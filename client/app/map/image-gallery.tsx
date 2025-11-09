@@ -1,4 +1,5 @@
 import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+import { useTranslations } from 'next-intl';
 import { ButtonHTMLAttributes, DetailedHTMLProps, useState } from 'react';
 
 function GalleryDot(
@@ -26,6 +27,7 @@ function GalleryDot(
 export default function ImageGallery({ images, className }: {
   images: string[], className?: string
 }) {
+  const t = useTranslations('ImageGallery');
   const [current, setCurrent] = useState(0);
 
   if (images.length === 0) {
@@ -36,7 +38,7 @@ export default function ImageGallery({ images, className }: {
           text-gray-500 ${className}
         `}
       >
-        <span>Brak dostępnych obrazków :(</span>
+        <span>{t('noImages')}</span>
       </div>
     );
   }

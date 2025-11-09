@@ -3,6 +3,7 @@ import useFacilityData from '../hooks/useFacilityData';
 import { DataContext } from './data-context';
 import { Facility } from '../lib/model/facility';
 import ImageGallery from './image-gallery';
+import { useTranslations } from 'next-intl';
 
 function List({ points }: { points: string[] }) {
   return (
@@ -30,6 +31,8 @@ function TextSection({ header, children }: {
 }
 
 function GoBackButton({ onClick }: { onClick: () => any }) {
+  const t = useTranslations('FacilityInfo');
+
   return (
     <div className='pt-3 pl-4'>
       <button
@@ -37,7 +40,7 @@ function GoBackButton({ onClick }: { onClick: () => any }) {
           duration-300 hover:text-blue-500 cursor-pointer'
         onClick={onClick}
       >
-        ← Wróć do listy
+        ← {t('goBack')}
       </button>
     </div>
   );
@@ -57,6 +60,8 @@ function FacilityHeader({ name, address }: { name: string, address: string }) {
 function FacilityFooter({ goBack, navigate }: {
   goBack: () => any, navigate: () => any
 }) {
+  const t = useTranslations('FacilityInfo');
+
   return (
     <div className='p-4 border-t border-gray-200 flex justify-end gap-2'>
       <button
@@ -64,25 +69,36 @@ function FacilityFooter({ goBack, navigate }: {
           hover:bg-gray-200 transition cursor-pointer'
         onClick={goBack}
       >
-        Wróć
+        {t('goBackShort')}
       </button>
       <button
         className='px-4 py-2 rounded-lg bg-blue-600 text-white
           hover:bg-blue-700 transition cursor-pointer'
         onClick={navigate}
       >
-        Nawiguj
+        {t('navigate')}
       </button>
     </div>
   );
 }
 
 function FacilityInfo({ data }: { data: Facility }) {
+  const t = useTranslations('FacilityInfo');
   const { setSelectedFacility } = useContext(DataContext);
 
   const navigateLink = data.getNavigateLink();
 
   const goBack = () => setSelectedFacility(undefined);
+
+  const dayNames = {
+    1: t('monday'),
+    2: t('tuesday'),
+    3: t('wednesday'),
+    4: t('thursday'),
+    5: t('friday'),
+    6: t('saturday'),
+    7: t('sunday')
+  };
 
   return (
     <>
@@ -97,38 +113,38 @@ function FacilityInfo({ data }: { data: Facility }) {
         <ImageGallery images={data.images} className='h-48 w-full' />
       </div>
 
-      <TextSection header='Usługi'>
+      <TextSection header={t('services')}>
         <List points={data.serviceTypes} />
       </TextSection>
 
       {data.cards.length !== 0 &&
-        <TextSection header='Karty'>
+        <TextSection header={t('cards')}>
           <List points={data.cards} />
         </TextSection>}
 
       {(data.phone || data.email) &&
-        <TextSection header='Kontakt'>
-          {data.phone && <>Telefon: {data.phone}<br /></>}
-          {data.email && `Email: ${data.email}`}
+        <TextSection header={t('contact')}>
+          {data.phone && <>{t('phoneNumber')}: {data.phone}<br /></>}
+          {data.email && `${t('email')}: ${data.email}`}
         </TextSection>}
 
       {data.website &&
-          <TextSection header='Strona internetowa'>
+          <TextSection header={t('website')}>
           <a href={data.website} className='text-gray-800'>{data.website}</a>
         </TextSection>}
 
       {data.fanpage &&
-        <TextSection header='Fanpage'>
+        <TextSection header={t('fanpage')}>
           <a href={data.fanpage} className='text-gray-800'>{data.fanpage}</a>
         </TextSection>}
 
       {data.description &&
-        <TextSection header='Opis'>
+        <TextSection header={t('description')}>
           {data.description}
         </TextSection>}
 
-      <TextSection header='Godziny otwarcia'>
-        <List points={data.getReadableOpenHours()} />
+      <TextSection header={t('openHours')}>
+        <List points={data.getReadableOpenHours(dayNames)} />
       </TextSection>
 
       <FacilityFooter
@@ -140,12 +156,13 @@ function FacilityInfo({ data }: { data: Facility }) {
 }
 
 export default function FacilityInfoContainer() {
+  const t = useTranslations('FacilityInfo');
   const { selectedFacility } = useContext(DataContext);
   const data = useFacilityData(selectedFacility);
 
   return (
     <>
-      {data ? <FacilityInfo data={data} /> : 'Ładowanie...'}
+      {data ? <FacilityInfo data={data} /> : t('loading')}
     </>
   );
 }

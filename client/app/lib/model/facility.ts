@@ -1,4 +1,4 @@
-import { dayNames, isInTimeRange } from '../time-util';
+import { isInTimeRange } from '../time-util';
 
 export interface FacilityProps {
   id: number;
@@ -56,7 +56,7 @@ export class Facility {
     return possible.some(range => isInTimeRange(date, range));
   }
 
-  getReadableOpenHours(): string[] {
+  getReadableOpenHours(dayNames: { [k: number]: string }): string[] {
     const result: string[] = [];
   
     for (let i = 0; i < this.openHours.length; ++i) {
@@ -65,7 +65,7 @@ export class Facility {
       if (openHours !== '')
         result.push(`${dayName}: ${openHours}`);
     }
-  
+
     return result;
   }
 

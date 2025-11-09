@@ -3,8 +3,11 @@ import { DataContext } from './data-context';
 import useFullSearch, { getSearchParamDeps } from '../hooks/useFullSearch';
 import ScrollableList from './scrollable-list';
 import FoundObjectPreview from './found-object-preview';
+import { useTranslations } from 'next-intl';
 
 export default function SearchResults() {
+  const t = useTranslations('SearchResults');
+
   const [page, setPage] = useState(0);
   const { searchParams } = useContext(DataContext);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -24,13 +27,13 @@ export default function SearchResults() {
       ref={scrollRef}
     >
       <h3 className='font-semibold mb-2 text-gray-800 px-4 pt-3'>
-        Znalezione obiekty
+        {t('foundObjects')}
       </h3>
       {foundObjects.length === 0 ? (
         <ul className='space-y-2 px-4 pb-3'>
           <div className='flex flex-col items-center text-gray-500 py-6'>
             <p className='text-base'>
-              Nie znaleziono żadnego obiektu o podanych parametrach :(
+              {t('noResults')}
             </p>
           </div>
         </ul>

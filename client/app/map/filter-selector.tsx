@@ -3,9 +3,11 @@ import useStaticSearchParams from '../hooks/useStaticSearchParams';
 import TabbedSelector, { CheckboxItem } from './tabbed-selector';
 import { DataContext } from './data-context';
 import useAllParams from '../hooks/useAllParams';
+import { useTranslations } from 'next-intl';
 
 function FilterSearchResults({ searchTerm }: { searchTerm: string }) {
   const allParams = useAllParams();
+  const t = useTranslations('FilterSelector');
 
   const results = allParams.filter(f =>
     f.value.toLowerCase().includes(searchTerm.toLowerCase())
@@ -14,7 +16,7 @@ function FilterSearchResults({ searchTerm }: { searchTerm: string }) {
   if (results.length === 0)
     return (
       <div className='max-h-48 overflow-y-auto space-y-2'>
-        <p className='text-gray-400 text-sm'>Brak wyników</p>
+        <p className='text-gray-400 text-sm'>{t('noResults')}</p>
       </div>
     );
 
@@ -34,6 +36,7 @@ function FilterSearchResults({ searchTerm }: { searchTerm: string }) {
 }
 
 function ParamTabs() {
+  const t = useTranslations('FilterSelector');
   const { filters, serviceTypes, cards } = useStaticSearchParams();
   
   const { searchParams: {
@@ -44,28 +47,28 @@ function ParamTabs() {
 
   const tabs = [
     {
-      name: 'Filtry',
+      name: t('filters'),
       options: filters,
       selected: selectedFilters
     },
     {
-      name: 'Usługi',
+      name: t('services'),
       options: serviceTypes,
       selected: selectedServiceTypes
     },
     {
-      name: 'Karty',
+      name: t('cards'),
       options: cards,
       selected: selectedCards
     }
   ];
 
   const handleTabContentChange = (tab: string, selected: string[]) => {
-    if (tab === 'Filtry')
+    if (tab === t('filters'))
       setSelectedFilters(selected);
-    else if (tab === 'Usługi')
+    else if (tab === t('services'))
       setSelectedServiceTypes(selected);
-    else if (tab === 'Karty')
+    else if (tab === t('cards'))
       setSelectedCards(selected);
   }
 
@@ -84,6 +87,7 @@ export default function FilterSelector(
       buttonRef: React.RefObject<HTMLButtonElement | null>
     }
 ) {
+  const t = useTranslations('FilterSelector');
   const [searchTerm, setSearchTerm] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -110,7 +114,7 @@ export default function FilterSelector(
     >
       <input
         type='text'
-        placeholder='Szukaj filtrów...'
+        placeholder={t('searchFilters')}
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         className='w-full mb-3 px-3 py-2 border border-gray-300 rounded-lg

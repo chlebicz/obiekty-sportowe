@@ -3,6 +3,7 @@ import { FuzzySearchResult } from '../lib/services/facilities';
 import { DataContext } from './data-context';
 import { MagnifyingGlassIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import useFuzzySearch from '../hooks/useFuzzySearch';
+import { useTranslations } from 'next-intl';
 
 function SearchInputDropdownFilteredItem({ item }: {
   item: FuzzySearchResult
@@ -26,19 +27,20 @@ function SearchInputDropdownFilteredItem({ item }: {
 function SearchInputDropdown({ searchDraft, ref }:
   { searchDraft: string, ref?: React.Ref<HTMLUListElement> }
 ) {
+  const t = useTranslations('SearchInput');
   const { loading, result } = useFuzzySearch(searchDraft);
 
   let content: React.ReactNode;
   if (loading)
     content = (
       <li className='px-4 py-2 text-sm text-gray-400'>
-        Ładowanie...
+        {t('loading')}
       </li>
     );
   else if (result.length === 0)
     content = (
       <li className='px-4 py-2 text-sm text-gray-400'>
-        Brak wyników
+        {t('noResults')}
       </li>
     );
   else
@@ -58,6 +60,8 @@ function SearchInputDropdown({ searchDraft, ref }:
 }
 
 export default function SearchInput() {
+  const t = useTranslations('SearchInput');
+
   const { searchParams: {
     searchValue, setSearchValue
   } } = useContext(DataContext);
@@ -104,7 +108,7 @@ export default function SearchInput() {
         <form onSubmit={handleSubmit}>
           <input
             type='text'
-            placeholder='Wyszukaj...'
+            placeholder={t('search')}
             className='pl-10 pr-3 py-2.5 w-full border rounded-lg text-sm
               text-gray-700 placeholder-gray-400 focus:outline-none
               focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
