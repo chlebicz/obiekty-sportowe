@@ -124,12 +124,14 @@ function FacilityInfo({ data }: { data: Facility }) {
 
       {(data.phone || data.email) &&
         <TextSection header={t('contact')}>
-          {data.phone && <>{t('phoneNumber')}: {data.phone}<br /></>}
-          {data.email && `${t('email')}: ${data.email}`}
+          <ul className='list-none'>
+            {data.phone && <li>{t('phoneNumber')}: {data.phone}</li>}
+            {data.email && <li>{t('email')}: {data.email}</li>}
+          </ul>
         </TextSection>}
 
       {data.website &&
-          <TextSection header={t('website')}>
+        <TextSection header={t('website')}>
           <a href={data.website} className='text-gray-800'>{data.website}</a>
         </TextSection>}
 
