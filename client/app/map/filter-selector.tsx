@@ -118,7 +118,7 @@ export default function FilterSelector(
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         className='w-full mb-3 px-3 py-2 border border-gray-300 rounded-lg
-          text-sm focus:outline-none focus:border-blue-400'
+          text-sm focus:outline-none focus:border-blue-400 text-black'
       />
 
       {searchTerm === '' ? (

@@ -54,7 +54,7 @@ export function CheckboxItem({ label, checked, onChange, type }: {
         className='h-4 w-4 rounded border-gray-300 text-blue-500
           focus:ring-0 cursor-pointer'
       />
-      <span className='flex-1'>{label}</span>
+      <span className='flex-1 text-black'>{label}</span>
       {type &&
         <span className='text-gray-400 text-xs italic mr-1'>
           {type}
