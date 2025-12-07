@@ -1,14 +1,17 @@
-import useFacilities, { MapObj } from '@/app/hooks/useFacilities';
+import useFacilities from '@/app/hooks/useFacilities';
 import { ServicesContext } from '@/app/lib/context';
-import { FacilitiesService, LatLngBounds } from '@/app/lib/services/facilities';
-import { renderHook } from '@testing-library/react';
+import {
+  FacilitiesService, FacilitySingleton, LatLngBounds, MapObj
+} from '@/app/lib/services/facilities';
+import { renderHook, RenderHookResult, waitFor } from '@testing-library/react';
+import { act } from 'react';
 
 const mockFindInBounds = jest.fn();
 
 const wrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <ServicesContext.Provider value={
     {
-      facilitiesService: { findInBounds: mockFindInBounds }
+      facilitiesService: { findOnMap: mockFindInBounds }
     } as unknown as { facilitiesService: FacilitiesService }
   }>
     {children}
@@ -17,27 +20,29 @@ const wrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 
 describe(useFacilities, () => {
   it('fetches objects when bounds change', async () => {
-    const bounds = {
-      getNorthEast: () => ({ lat: () => 52.25, lng: () => 21.10 }),
-      getSouthWest: () => ({ lat: () => 52.20, lng: () => 21.00 }),
-    } as unknown as LatLngBounds;
+    const mapBounds: LatLngBounds = {
+      northEast: { lat: 52.25, lng: 21.10 },
+      southWest: { lat: 52.20, lng: 21.00 },
+    };
 
     const mockObjects: MapObj[] = [
-      { id: 1, label: 'Test object', pos: { lat: 52.22, lng: 21.05 } }
+      {
+        type: 'singleton',
+        value: { id: 1234, location: { lat: 52.22, lng: 21.05 } } as FacilitySingleton
+      }
     ];
 
-    mockFindInBounds.mockResolvedValueOnce(mockObjects);
+    mockFindInBounds.mockResolvedValue(mockObjects);
 
-    const { result, rerender } = renderHook(() => useFacilities(bounds), { wrapper });
+    const { result } = renderHook(() => useFacilities({ mapBounds }), { wrapper });
 
-    rerender();
-
-    expect(result.current).toEqual(mockObjects);
-    expect(mockFindInBounds).toHaveBeenCalledWith(bounds);
+    await waitFor(() => {
+      expect(result.current).toEqual(mockObjects);
+    });
   });
 
   it('returns empty array if bounds is undefined', () => {
-    const { result } = renderHook(() => useFacilities(undefined), { wrapper });
+    const { result } = renderHook(() => useFacilities({}), { wrapper });
     expect(result.current).toEqual([]);
     expect(mockFindInBounds).not.toHaveBeenCalled();
   });

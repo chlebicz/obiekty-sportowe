@@ -7,7 +7,7 @@ import { divIcon, LeafletEvent, ResizeEvent } from 'leaflet';
 import MapWrapper from './map-wrapper';
 import { DataContext } from './data-context';
 import {
-  FacilityCluster, FacilitySingleton, isSingleton, MapObj
+  FacilityCluster, FacilitySingleton, isSingleton, LatLngBounds, MapObj
 } from '../lib/services/facilities';
 import useFacilities from '../hooks/useFacilities';
 
@@ -76,6 +76,16 @@ function Marker({ obj }: { obj: MapObj }) {
     return <ClusterMarker cluster={obj.value as FacilityCluster} />;
 }
 
+function toBounds(mapBounds: any): LatLngBounds {
+  const sw = mapBounds.getSouthWest();
+  const ne = mapBounds.getNorthEast();
+
+  return {
+    southWest: { lat: sw.lat, lng: sw.lng },
+    northEast: { lat: ne.lat, lng: ne.lng }
+  };
+}
+
 export default function MapContents() {
   const { requestLocation } = useLocation();
 
@@ -103,7 +113,7 @@ export default function MapContents() {
   const handleBoundsChange = (e: ResizeEvent) => {
     setCenter(e.target.getCenter());
     setZoom(e.target.getZoom());
-    setMapBounds(e.target.getBounds());
+    setMapBounds(toBounds(e.target.getBounds()));
   }
 
   return (
@@ -115,7 +125,7 @@ export default function MapContents() {
           dragend: handleBoundsChange,
           zoomend: handleBoundsChange,
           ready: (e: LeafletEvent) => {
-            setMapBounds(e.target.getBounds());
+            setMapBounds(toBounds(e.target.getBounds()));
           }
         }}
       >

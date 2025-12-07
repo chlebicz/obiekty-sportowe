@@ -4,6 +4,12 @@
  */
 
 import type {Config} from 'jest';
+import nextJest from 'next/jest.js';
+
+const createJestConfig = nextJest({
+  // Provide the path to your Next.js app to load next.config.js and .env files in your test environment
+  dir: './',
+})
 
 const config: Config = {
   // All imported modules in your tests should be mocked automatically
@@ -92,9 +98,7 @@ const config: Config = {
   // ],
 
   // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
-  moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/$1',
-  },
+  // moduleNameMapper: {},
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
   // modulePathIgnorePatterns: [],
@@ -106,7 +110,7 @@ const config: Config = {
   // notifyMode: "failure-change",
 
   // A preset that is used as a base for Jest's configuration
-  preset: 'ts-jest',
+  // preset: undefined,
 
   // Run tests from one or more projects
   // projects: undefined,
@@ -179,9 +183,7 @@ const config: Config = {
   // testRunner: "jest-circus/runner",
 
   // A map from regular expressions to paths to transformers
-  transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest', // transform TS/TSX files
-  },
+  // transform: undefined,
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
   // transformIgnorePatterns: [
@@ -202,4 +204,4 @@ const config: Config = {
   // watchman: true,
 };
 
-export default config;
+export default createJestConfig(config);

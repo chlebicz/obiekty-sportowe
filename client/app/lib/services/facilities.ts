@@ -2,8 +2,8 @@ import ApiClient from '../api-client';
 import { Facility, FacilityProps } from '../model/facility';
 
 export interface LatLngBounds {
-  getNorthEast(): { lat(): number, lng(): number },
-  getSouthWest(): { lat(): number, lng(): number }
+  northEast: { lat: number, lng: number };
+  southWest: { lat: number, lng: number };
 }
 
 export interface FuzzySearchResult {
@@ -15,7 +15,7 @@ export interface FuzzySearchResult {
 export type SortingOption = 'name' | 'distance' | 'rating';
 
 export interface SearchParams {
-  mapBounds?: google.maps.LatLngBounds;
+  mapBounds?: LatLngBounds;
   searchValue?: string;
   selectedFilters: string[];
   selectedServiceTypes: string[];
@@ -25,7 +25,6 @@ export interface SearchParams {
 
 export interface FacilitySingleton {
   id: number;
-  name: string;
   location: { lng: number, lat: number };
 }
 
@@ -67,8 +66,8 @@ export class FacilitiesService {
   ) : Promise<MapObj[]> {
     const { signal } = options || {};
 
-    const ne = mapBounds!.getNorthEast();
-    const sw = mapBounds!.getSouthWest();
+    const ne = mapBounds!.northEast;
+    const sw = mapBounds!.southWest;
 
     return this.apiClient.get('/facilities/map', {
       query: {
@@ -117,8 +116,8 @@ export class FacilitiesService {
   ): Promise<Facility[]> {
     const { signal } = options || {};
 
-    const ne = mapBounds!.getNorthEast();
-    const sw = mapBounds!.getSouthWest();
+    const ne = mapBounds!.northEast;
+    const sw = mapBounds!.southWest;
 
     if (sortingOption && sortingOption !== 'name')
       throw new Error('sorting option not supported yet');

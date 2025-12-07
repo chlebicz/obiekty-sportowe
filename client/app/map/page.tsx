@@ -6,7 +6,7 @@ import Navbar from './navbar';
 import LeftPanel from './left-panel';
 import dynamic from 'next/dynamic';
 import { DataContext } from './data-context';
-import { SortingOption } from '../lib/services/facilities';
+import { LatLngBounds, SortingOption } from '../lib/services/facilities';
 
 const MapContents = dynamic(() => import('./map'), {
   ssr: false
@@ -17,7 +17,7 @@ export default function MapPage() {
     undefined
   );
 
-  const [mapBounds, setMapBounds] = useState<google.maps.LatLngBounds>();
+  const [mapBounds, setMapBounds] = useState<LatLngBounds>();
 
   const [searchValue, setSearchValue] = useState('');  
   const [sortingOption, setSortingOption] = useState<SortingOption>('name');
