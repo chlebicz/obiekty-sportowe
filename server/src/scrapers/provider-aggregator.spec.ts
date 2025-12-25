@@ -1,3 +1,14 @@
+// Mock before import to avoid loading the ESM module that breaks Jest
+jest.mock('./semantic-matcher', () => ({
+  SemanticMatcher: {
+    getInstance: () => ({
+      init: jest.fn(),
+      generateEmbedding: jest.fn().mockResolvedValue([0.1, 0.2]),
+      cosineSimilarity: jest.fn().mockReturnValue(0.95),
+    }),
+  },
+}));
+
 import ProviderAggregator from './provider-aggregator';
 
 describe(ProviderAggregator, () => {

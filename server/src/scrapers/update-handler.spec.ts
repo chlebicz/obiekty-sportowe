@@ -1,3 +1,14 @@
+// Mock before imports to avoid loading the ESM module that breaks Jest
+jest.mock('./semantic-matcher', () => ({
+  SemanticMatcher: {
+    getInstance: () => ({
+      init: jest.fn(),
+      generateEmbedding: jest.fn(),
+      cosineSimilarity: jest.fn(),
+    }),
+  },
+}));
+
 import { Test, TestingModule } from '@nestjs/testing';
 import UpdateHandler from './update-handler';
 import { getRepositoryToken } from '@nestjs/typeorm';
