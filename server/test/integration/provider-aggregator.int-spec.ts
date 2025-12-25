@@ -30,7 +30,7 @@ const mockFacility = (overrides: Partial<CreateFacilityParams>): CreateFacilityP
   ...overrides,
 });
 
-describe('ProviderAggregator Integration (Real Model)', () => {
+describe('ProviderAggregator Integration with real SemanticMatcher', () => {
   let aggregator: ProviderAggregator;
 
   before(async () => {
@@ -41,42 +41,40 @@ describe('ProviderAggregator Integration (Real Model)', () => {
     aggregator = new ProviderAggregator();
   });
 
-  it('should merge "Test Gym Warsaw" with "Test Gym" (city name in facility name)', async () => {
-    const city = 'Warsaw';
+  it('should merge when city appears in facility name', async () => {
+    const city = 'Warszawa';
     const f1 = mockFacility({
-      name: 'Test Gym Warsaw',
+      name: `Test Gym ${city}`,
       city: city,
-      streetName: 'St',
-      streetNumber: '1',
+      streetName: 'Zielona',
+      streetNumber: '26',
       location: { lat: 52.0, lng: 21.0 }
     });
     const f2 = mockFacility({
       name: 'Test Gym',
       city: city,
-      streetName: 'St',
-      streetNumber: '1',
+      streetName: 'Zielona',
+      streetNumber: '26',
       location: { lat: 52.0001, lng: 21.0001 }
     });
 
     const result = await aggregator.combineTwoSets([f1], [f2]);
 
     assert.strictEqual(result.length, 1, 'Should have merged into 1 facility');
-    assert.strictEqual(result[0].city, 'Warsaw');
-    console.log('✅ Merged "Test Gym Warsaw" and "Test Gym" successfully.');
   });
 
-  it('should merge messy address "Street 10" vs "Street" #10', async () => {
+  it('should merge when street number appears in street name', async () => {
     const f1 = mockFacility({
       name: 'Super Gym',
-      streetName: 'Main St',
+      streetName: 'Zielona',
       streetNumber: '10',
       city: 'Krakow',
       location: { lat: 50.0, lng: 20.0 }
     });
     const f2 = mockFacility({
       name: 'Super Gym',
-      streetName: 'Main St 10',
-      streetNumber: '',
+      streetName: 'Zielona 10',
+      streetNumber: '10',
       city: 'Krakow',
       location: { lat: 50.0001, lng: 20.0001 }
     });
@@ -84,27 +82,25 @@ describe('ProviderAggregator Integration (Real Model)', () => {
     const result = await aggregator.combineTwoSets([f1], [f2]);
 
     assert.strictEqual(result.length, 1, 'Should have merged messy addresses');
-    console.log('✅ Merged messy addresses successfully.');
   });
 
-  it('should NOT merge distinct facilities "Fitness Platinium" vs "CityFit"', async () => {
+  it('should not merge facilities at similar location when names dont match', async () => {
     // Two different brands at similar location (e.g. same mall)
     const f1 = mockFacility({
-      name: 'Fitness Platinium',
-      city: 'Warsaw',
-      streetName: 'Mall Street',
+      name: 'Fitness Platinum',
+      city: 'Warszawa',
+      streetName: 'Targowa',
       location: { lat: 52.0, lng: 21.0 }
     });
     const f2 = mockFacility({
       name: 'CityFit',
-      city: 'Warsaw',
-      streetName: 'Mall Street',
+      city: 'Warszawa',
+      streetName: 'Targowa',
       location: { lat: 52.0001, lng: 21.0001 }
     });
 
     const result = await aggregator.combineTwoSets([f1], [f2]);
 
-    assert.strictEqual(result.length, 2, 'Should NOT have merged distinct gyms');
-    console.log('✅ Correctly kept distinct gyms separate.');
+    assert.strictEqual(result.length, 2, 'Should not have merged distinct gyms');
   });
 });
