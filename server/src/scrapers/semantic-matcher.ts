@@ -1,4 +1,5 @@
 import { pipeline, FeatureExtractionPipeline } from '@xenova/transformers';
+import Embedding from './embedding';
 
 export class SemanticMatcher {
   private static instance: SemanticMatcher;
@@ -22,7 +23,7 @@ export class SemanticMatcher {
     }
   }
 
-  async generateEmbedding(text: string): Promise<number[]> {
+  async generateEmbedding(text: string): Promise<Embedding> {
     if (!this.extractor) {
       await this.init();
     }
@@ -36,20 +37,6 @@ export class SemanticMatcher {
     const output = await this.extractor!(cleanedText, { pooling: 'mean', normalize: true });
 
     // Convert Tensor to standard number array
-    return Array.from(output.data);
-  }
-
-  cosineSimilarity(vecA: number[], vecB: number[]): number {
-    if (vecA.length !== vecB.length) {
-      throw new Error('Vectors must be of the same length');
-    }
-
-    // Since we normalized the vectors during generation,
-    // Cosine Similarity is just the Dot Product.
-    let dotProduct = 0;
-    for (let i = 0; i < vecA.length; i++) {
-      dotProduct += vecA[i] * vecB[i];
-    }
-    return dotProduct;
+    return new Embedding(Array.from(output.data));
   }
 }

@@ -1,9 +1,10 @@
 import { CreateFacilityParams } from 'src/facilities/facilities.service';
 import { SemanticMatcher } from './semantic-matcher';
+import Embedding from './embedding';
 
 type FacilityWithEmbedding = {
   facility: CreateFacilityParams;
-  embedding: number[];
+  embedding: Embedding;
 };
 
 export default class ProviderAggregator {
@@ -102,9 +103,7 @@ export default class ProviderAggregator {
       let maxScore = -1;
 
       for (const candidate of candidates) {
-        const similarity = this.matcher.cosineSimilarity(
-          itemEmbedding, candidate.embedding
-        );
+        const similarity = itemEmbedding.similarity(candidate.embedding);
         const isGeographicallyClose = this.areLocationsClose(
           item, candidate.facility
         );
