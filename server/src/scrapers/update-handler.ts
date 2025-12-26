@@ -15,7 +15,7 @@ import {
   medicoverCards, medicoverFilters,
   requestDelay as medicoverRequestDelay
 } from './medicover.config';
-import { existsSync } from 'fs';
+import { existsSync, rmdirSync } from 'fs';
 
 export default class UpdateHandler {
   constructor(
@@ -73,6 +73,11 @@ export default class UpdateHandler {
 
     console.log('updating to db...');
     await this.facilitiesService.createMany(aggregatedObjs);
+
+    console.log('removing cache');
+    try {
+      rmdirSync('scrapers-output');
+    } catch {}
 
     console.log('done');
   }
