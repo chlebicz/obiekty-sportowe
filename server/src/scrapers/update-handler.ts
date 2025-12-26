@@ -64,7 +64,7 @@ export default class UpdateHandler {
     const aggregator = new ProviderAggregator();
 
     console.log('combining gathered objects...');
-    const aggregatedObjs = aggregator.combineTwoSets(
+    const aggregatedObjs = await aggregator.combineTwoSets(
       multisportObjects, medicoverObjects
     );
 
