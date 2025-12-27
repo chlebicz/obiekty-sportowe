@@ -11,6 +11,7 @@ export interface MatchableFacility {
   city?: string;
   streetName?: string;
   streetNumber?: string;
+  flatNumber?: string;
   location: SimpleLocation | { coordinates: number[] };
 }
 
@@ -19,17 +20,17 @@ export type FacilityWithEmbedding<T> = {
   embedding: Embedding;
 };
 
-export class SimilarityUtils {
-  private static instance: SimilarityUtils;
+export class FacilityMatcher {
+  private static instance: FacilityMatcher;
   private matcher = SemanticMatcher.getInstance();
 
   private constructor() {}
 
-  static getInstance(): SimilarityUtils {
-    if (!SimilarityUtils.instance) {
-      SimilarityUtils.instance = new SimilarityUtils();
+  static getInstance(): FacilityMatcher {
+    if (!FacilityMatcher.instance) {
+      FacilityMatcher.instance = new FacilityMatcher();
     }
-    return SimilarityUtils.instance;
+    return FacilityMatcher.instance;
   }
 
   async init() {
@@ -37,13 +38,16 @@ export class SimilarityUtils {
   }
 
   getTextForEmbedding(f: MatchableFacility): string {
-    return `${f.name} ${f.streetName || ''} ${f.streetNumber || ''} ${f.city || ''}`
-      .replace(/\s+/g, ' ').trim();
+    return [
+      f.name, f.streetName, f.streetNumber, f.flatNumber, f.city
+    ]
+      .filter(el => el) // remove nulls
+      .join(' ').replace(/\s+/g, ' ').trim();
   }
 
   getLocation(f: MatchableFacility): SimpleLocation {
     if ('coordinates' in f.location && Array.isArray(f.location.coordinates)) {
-        return { lng: f.location.coordinates[0], lat: f.location.coordinates[1] };
+      return { lng: f.location.coordinates[0], lat: f.location.coordinates[1] };
     }
     return f.location as SimpleLocation;
   }

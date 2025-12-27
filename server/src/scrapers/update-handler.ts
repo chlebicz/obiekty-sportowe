@@ -17,10 +17,10 @@ import {
 } from './medicover.config';
 import { existsSync, rmdirSync } from 'fs';
 import { Facility } from 'src/facilities/facility.entity';
-import { SimilarityUtils, FacilityWithEmbedding } from './similarity-utils';
+import { FacilityMatcher, FacilityWithEmbedding } from './facility-matcher';
 
 export default class UpdateHandler {
-  private similarityUtils = SimilarityUtils.getInstance();
+  private facilityMatcher = FacilityMatcher.getInstance();
 
   constructor(
     private facilitiesService: FacilitiesService
@@ -84,7 +84,7 @@ export default class UpdateHandler {
   }
 
   async reconcile(scrapedFacilities: CreateFacilityParams[]) {
-    await this.similarityUtils.init();
+    await this.facilityMatcher.init();
     const existingFacilities = await this.facilitiesService.getAll();
 
     // Group existing facilities by city
@@ -92,15 +92,15 @@ export default class UpdateHandler {
 
     console.log('generating embeddings for existing facilities...');
     for (const facility of existingFacilities) {
-      const cityKey = (facility.city || 'unknown').toLowerCase();
-      if (!existingByCity.has(cityKey)) {
-        existingByCity.set(cityKey, []);
+      const key = facility.postalCode;
+      if (!existingByCity.has(key)) {
+        existingByCity.set(key, []);
       }
 
-      const embedding = await this.similarityUtils.generateEmbedding(
-        this.similarityUtils.getTextForEmbedding(facility)
+      const embedding = await this.facilityMatcher.generateEmbedding(
+        this.facilityMatcher.getTextForEmbedding(facility)
       );
-      existingByCity.get(cityKey)!.push({ facility, embedding });
+      existingByCity.get(key)!.push({ facility, embedding });
     }
 
     const toInsert: CreateFacilityParams[] = [];
@@ -108,15 +108,15 @@ export default class UpdateHandler {
 
     console.log('matching scraped facilities with db...');
     for (const scraped of scrapedFacilities) {
-      const cityKey = (scraped.city || 'unknown').toLowerCase();
-      const candidates = existingByCity.get(cityKey) || [];
+      const key = scraped.postalCode;
+      const candidates = existingByCity.get(key) || [];
 
       if (candidates.length === 0) {
         toInsert.push(scraped);
         continue;
       }
 
-      const { match } = await this.similarityUtils.findBestMatch(scraped, candidates);
+      const { match } = await this.facilityMatcher.findBestMatch(scraped, candidates);
 
       if (match) {
         matchedIds.add(match.id);

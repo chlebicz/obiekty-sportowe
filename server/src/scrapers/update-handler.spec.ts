@@ -11,7 +11,7 @@ jest.mock('./semantic-matcher', () => ({
 import { Test, TestingModule } from '@nestjs/testing';
 import UpdateHandler from './update-handler';
 import { FacilitiesService } from '../facilities/facilities.service';
-import { SimilarityUtils } from './similarity-utils';
+import { FacilityMatcher } from './facility-matcher';
 
 // Mock dependencies
 jest.mock('./multisport', () => {
@@ -35,7 +35,7 @@ jest.mock('./provider-aggregator', () => {
 describe('UpdateHandler', () => {
   let updateHandler: UpdateHandler;
   let facilitiesService: FacilitiesService;
-  let similarityUtils: SimilarityUtils;
+  let facilityMatcher: FacilityMatcher;
 
   const mockFacilitiesService = {
     getAll: jest.fn(),
@@ -66,14 +66,14 @@ describe('UpdateHandler', () => {
 
     updateHandler = module.get<UpdateHandler>(UpdateHandler);
     facilitiesService = module.get<FacilitiesService>(FacilitiesService);
-    similarityUtils = SimilarityUtils.getInstance();
+    facilityMatcher = FacilityMatcher.getInstance();
 
-    // Mock SimilarityUtils methods
-    jest.spyOn(similarityUtils, 'init').mockResolvedValue(undefined);
-    jest.spyOn(similarityUtils, 'generateEmbedding').mockResolvedValue({
+    // Mock FacilityMatcher methods
+    jest.spyOn(facilityMatcher, 'init').mockResolvedValue(undefined);
+    jest.spyOn(facilityMatcher, 'generateEmbedding').mockResolvedValue({
       similarity: jest.fn(),
     } as any);
-    jest.spyOn(similarityUtils, 'getTextForEmbedding').mockReturnValue('some text');
+    jest.spyOn(facilityMatcher, 'getTextForEmbedding').mockReturnValue('some text');
   });
 
   afterEach(() => {
@@ -87,7 +87,7 @@ describe('UpdateHandler', () => {
       const scrapedFacilities = [{ name: 'New Gym', city: 'Warsaw', location: { lat: 0, lng: 0 } }];
 
       // Mock findBestMatch to return no match
-      jest.spyOn(similarityUtils, 'findBestMatch').mockResolvedValue({ match: null, score: 0 });
+      jest.spyOn(facilityMatcher, 'findBestMatch').mockResolvedValue({ match: null, score: 0 });
 
       await updateHandler.reconcile(scrapedFacilities as any);
 
@@ -102,7 +102,7 @@ describe('UpdateHandler', () => {
       const scrapedFacilities = [{ name: 'Old Gym Updated', city: 'Warsaw', location: { lat: 0, lng: 0 } }];
 
       // Mock findBestMatch to return match
-      jest.spyOn(similarityUtils, 'findBestMatch').mockResolvedValue({ match: existingFacility as any, score: 0.95 });
+      jest.spyOn(facilityMatcher, 'findBestMatch').mockResolvedValue({ match: existingFacility as any, score: 0.95 });
 
       await updateHandler.reconcile(scrapedFacilities as any);
 
@@ -132,7 +132,7 @@ describe('UpdateHandler', () => {
       const scraped2 = { name: 'New One', city: 'Warsaw', location: { lat: 0, lng: 0 } }; // New
 
       // Mock findBestMatch logic
-      const findBestMatchSpy = jest.spyOn(similarityUtils, 'findBestMatch');
+      const findBestMatchSpy = jest.spyOn(facilityMatcher, 'findBestMatch');
       findBestMatchSpy.mockImplementation(async (target, candidates) => {
         if (target.name === 'Keep Me Updated') {
             return { match: existing1 as any, score: 0.95 };

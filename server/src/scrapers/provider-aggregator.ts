@@ -1,8 +1,8 @@
 import { CreateFacilityParams } from 'src/facilities/facilities.service';
-import { SimilarityUtils, FacilityWithEmbedding } from './similarity-utils';
+import { FacilityMatcher, FacilityWithEmbedding } from './facility-matcher';
 
 export default class ProviderAggregator {
-  private similarityUtils = SimilarityUtils.getInstance();
+  private facilityMatcher = FacilityMatcher.getInstance();
 
   private combineUniqueElements<T>(first: T[], second: T[]) {
     return [...new Set([...first, ...second])];
@@ -43,37 +43,37 @@ export default class ProviderAggregator {
   async combineTwoSets(
     first: CreateFacilityParams[], second: CreateFacilityParams[]
   ): Promise<CreateFacilityParams[]> {
-    await this.similarityUtils.init();
+    await this.facilityMatcher.init();
 
     // Group first set by city for optimization
     const facilitiesByCity = new Map<string, FacilityWithEmbedding<CreateFacilityParams>[]>();
 
     // Process first set (source of truth / base set)
     for (const item of first) {
-      const cityKey = (item.postalCode || 'unknown').toLowerCase();
-      if (!facilitiesByCity.has(cityKey)) {
-        facilitiesByCity.set(cityKey, []);
+      const key = item.postalCode;
+      if (!facilitiesByCity.has(key)) {
+        facilitiesByCity.set(key, []);
       }
 
-      const embedding = await this.similarityUtils.generateEmbedding(
-        this.similarityUtils.getTextForEmbedding(item)
+      const embedding = await this.facilityMatcher.generateEmbedding(
+        this.facilityMatcher.getTextForEmbedding(item)
       );
-      facilitiesByCity.get(cityKey)!.push({ facility: item, embedding });
+      facilitiesByCity.get(key)!.push({ facility: item, embedding });
     }
 
     const newSecondSetFacilities: CreateFacilityParams[] = [];
 
     // Process second set and look for matches in the first set
     for (const item of second) {
-      const cityKey = (item.postalCode || 'unknown').toLowerCase();
-      const candidates = facilitiesByCity.get(cityKey) || [];
+      const key = item.postalCode;
+      const candidates = facilitiesByCity.get(key) || [];
 
       if (candidates.length === 0) {
         newSecondSetFacilities.push(item);
         continue;
       }
 
-      const { match: bestMatch } = await this.similarityUtils.findBestMatch(item, candidates);
+      const { match: bestMatch } = await this.facilityMatcher.findBestMatch(item, candidates);
 
       // Maintain a map of "final objects" derived from the first set.
       // If matched, update that object.
