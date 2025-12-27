@@ -89,8 +89,17 @@ export default class ProviderAggregator {
   private normalizedLevenshtein(a: string, b: string): number {
     const maxLen = Math.max(a.length, b.length);
     if (maxLen === 0) return 1.0;
-    const distance = this.levenshteinDistance(a.toLowerCase(), b.toLowerCase());
+    const distance = this.levenshteinDistance(a, b);
     return 1.0 - distance / maxLen;
+  }
+
+  private cleanName(name: string, city?: string): string {
+      let cleaned = name.toLowerCase();
+      if (city) {
+          cleaned = cleaned.replace(city.toLowerCase(), '');
+      }
+      // Remove all non-alphanumeric chars (removes spaces, punctuation)
+      return cleaned.replace(/[^a-z0-9]/g, '');
   }
 
   async combineTwoSets(
@@ -125,33 +134,37 @@ export default class ProviderAggregator {
         }
 
         const itemEmbedding = await this.matcher.generateEmbedding(this.getTextForEmbedding(item));
-        const itemText = this.getTextForEmbedding(item);
 
         let bestMatch: EnrichedFacility | null = null;
         let maxScore = -1;
 
         for (const candidate of candidates) {
-            const candidateText = this.getTextForEmbedding(candidate.facility);
             const similarity = this.matcher.cosineSimilarity(itemEmbedding, candidate.embedding);
             const isGeographicallyClose = this.areLocationsClose(item, candidate.facility);
-            const nameSimilarity = this.normalizedLevenshtein(item.name, candidate.facility.name);
 
-            // Hybrid Matching Logic
-            // 1. High Semantic Similarity (General case, e.g. messy address)
-            // 2. Moderate Semantic Similarity AND High Name Similarity (e.g. "salsafit" vs "salsa fit")
+            // Clean names (remove city, spaces, special chars) to check "core" name match
+            const cleanedA = this.cleanName(item.name, item.city);
+            const cleanedB = this.cleanName(candidate.facility.name, candidate.facility.city);
+            const nameSimilarityClean = this.normalizedLevenshtein(cleanedA, cleanedB);
+
+            // Refined Hybrid Logic
+            // 1. Extreme confidence in embedding (>0.99): likely exact string match or perfect alias
+            // 2. High confidence (>0.85) AND High core-name match (>0.80)
+            //    - "Blue Gym" vs "Blue Fitness": Sim High, CleanSim Low (0.58) -> Fail
+            //    - "Test Gym Warsaw" vs "Test Gym": Sim High, CleanSim 1.0 -> Pass
+            //    - "Salsafit" vs "Salsa Fit": Sim Medium/High, CleanSim 1.0 -> Pass
 
             let isMatch = false;
 
             if (isGeographicallyClose) {
-              if (similarity > 0.90) {
+              if (similarity > 0.99) {
                 isMatch = true;
-              } else if (similarity > 0.80 && nameSimilarity > 0.85) {
+              } else if (similarity > 0.85 && nameSimilarityClean > 0.80) {
                 isMatch = true;
               }
             }
 
             if (isMatch) {
-                // If multiple candidates match, pick the one with highest semantic score
                 if (similarity > maxScore) {
                     maxScore = similarity;
                     bestMatch = candidate;
@@ -169,7 +182,6 @@ export default class ProviderAggregator {
         }
     }
 
-    // Now collect all items: the ones from `first` (some might be merged) and the new ones from `second` (in `result`)
     const finalSet: CreateFacilityParams[] = [];
 
     for (const list of firstByCity.values()) {

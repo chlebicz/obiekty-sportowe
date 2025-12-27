@@ -127,4 +127,24 @@ describe('ProviderAggregator Integration (Real Model)', () => {
     assert.strictEqual(result.length, 1, 'Should have merged space variation');
     console.log('✅ Merged "salsafit" vs "salsa fit".');
   });
+
+  it('should NOT merge "Blue Gym" vs "Blue Fitness" (Distinct entities, same loc)', async () => {
+    const f1 = mockFacility({
+      name: 'Blue Gym',
+      city: 'London',
+      streetName: 'High St',
+      location: { lat: 51.5, lng: -0.1 }
+    });
+    const f2 = mockFacility({
+      name: 'Blue Fitness',
+      city: 'London',
+      streetName: 'High St',
+      location: { lat: 51.5001, lng: -0.1001 }
+    });
+
+    const result = await aggregator.combineTwoSets([f1], [f2]);
+
+    assert.strictEqual(result.length, 2, 'Should NOT have merged Blue Gym and Blue Fitness');
+    console.log('✅ Correctly kept Blue Gym and Blue Fitness separate.');
+  });
 });
