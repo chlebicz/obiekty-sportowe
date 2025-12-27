@@ -8,7 +8,9 @@ async function run() {
   const facilitiesService = context.get(FacilitiesService);
 
   const updateHandler = new UpdateHandler(facilitiesService);
-  await updateHandler.insertAll();
+
+  const keepCache = process.argv.includes('--keep-cache');
+  await updateHandler.update(keepCache);
 }
 
 run();

@@ -22,7 +22,7 @@ export default class UpdateHandler {
     private facilitiesService: FacilitiesService
   ) {}
 
-  async insertAll() {
+  async update(keepCache = false) {
     const hasCache = existsSync('scrapers-output/multisport.json');
 
     const multisportScraper = new MultisportScraper(
@@ -74,10 +74,12 @@ export default class UpdateHandler {
     console.log('updating to db...');
     await this.facilitiesService.createMany(aggregatedObjs);
 
-    console.log('removing cache');
-    try {
-      rmdirSync('scrapers-output');
-    } catch {}
+    if (!keepCache) {
+      console.log('removing cache');
+      try {
+        rmdirSync('scrapers-output');
+      } catch {}
+    }
 
     console.log('done');
   }
