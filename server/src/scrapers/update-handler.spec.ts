@@ -135,7 +135,7 @@ describe('UpdateHandler', () => {
       const findBestMatchSpy = jest.spyOn(facilityMatcher, 'findBestMatch');
       findBestMatchSpy.mockImplementation(async (target, candidates) => {
         if (target.name === 'Keep Me Updated') {
-            return { match: existing1 as any, score: 0.95 };
+          return { match: existing1 as any, score: 0.95 };
         }
         return { match: null, score: 0 };
       });
