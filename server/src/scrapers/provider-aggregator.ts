@@ -1,14 +1,8 @@
 import { CreateFacilityParams } from 'src/facilities/facilities.service';
-import { SemanticMatcher } from './semantic-matcher';
-import Embedding from './embedding';
-
-type FacilityWithEmbedding = {
-  facility: CreateFacilityParams;
-  embedding: Embedding;
-};
+import { SimilarityUtils, FacilityWithEmbedding } from './similarity-utils';
 
 export default class ProviderAggregator {
-  private matcher = SemanticMatcher.getInstance();
+  private similarityUtils = SimilarityUtils.getInstance();
 
   private combineUniqueElements<T>(first: T[], second: T[]) {
     return [...new Set([...first, ...second])];
@@ -46,29 +40,13 @@ export default class ProviderAggregator {
     };
   }
 
-  private getTextForEmbedding(f: CreateFacilityParams): string {
-    // Combine relevant fields to form a sentence describing the facility identity
-    return `${f.name} ${f.streetName || ''} ${f.streetNumber || ''} ${f.city || ''}`
-      .replace(/\s+/g, ' ').trim();
-  }
-
-  private areLocationsClose(
-    f1: CreateFacilityParams, f2: CreateFacilityParams
-  ): boolean {
-    const lngDiff = Math.abs(f1.location.lng - f2.location.lng);
-    const latDiff = Math.abs(f1.location.lat - f2.location.lat);
-
-    // ~200 meters difference roughly (0.002 deg approx 220m lat)
-    return lngDiff < 0.002 && latDiff < 0.002;
-  }
-
   async combineTwoSets(
     first: CreateFacilityParams[], second: CreateFacilityParams[]
   ): Promise<CreateFacilityParams[]> {
-    await this.matcher.init();
+    await this.similarityUtils.init();
 
     // Group first set by city for optimization
-    const facilitiesByCity = new Map<string, FacilityWithEmbedding[]>();
+    const facilitiesByCity = new Map<string, FacilityWithEmbedding<CreateFacilityParams>[]>();
 
     // Process first set (source of truth / base set)
     for (const item of first) {
@@ -77,8 +55,8 @@ export default class ProviderAggregator {
         facilitiesByCity.set(cityKey, []);
       }
 
-      const embedding = await this.matcher.generateEmbedding(
-        this.getTextForEmbedding(item)
+      const embedding = await this.similarityUtils.generateEmbedding(
+        this.similarityUtils.getTextForEmbedding(item)
       );
       facilitiesByCity.get(cityKey)!.push({ facility: item, embedding });
     }
@@ -95,35 +73,17 @@ export default class ProviderAggregator {
         continue;
       }
 
-      const itemEmbedding = await this.matcher.generateEmbedding(
-        this.getTextForEmbedding(item)
-      );
-
-      let bestMatch: FacilityWithEmbedding | null = null;
-      let maxScore = -1;
-
-      for (const candidate of candidates) {
-        const similarity = itemEmbedding.similarity(candidate.embedding);
-        const isGeographicallyClose = this.areLocationsClose(
-          item, candidate.facility
-        );
-
-        // Heuristic: If similarity is very high (>0.90) AND physically close
-        if (similarity > 0.90 && isGeographicallyClose) {
-          if (similarity > maxScore) {
-            maxScore = similarity;
-            bestMatch = candidate;
-          }
-        }
-      }
+      const { match: bestMatch } = await this.similarityUtils.findBestMatch(item, candidates);
 
       // Maintain a map of "final objects" derived from the first set.
       // If matched, update that object.
       // If not matched, add `item` (from second set) as a new object.
       if (bestMatch) {
         // Merge
-        const merged = this.combine(bestMatch.facility, item);
-        bestMatch.facility = merged;
+        const merged = this.combine(bestMatch, item);
+        // Note: bestMatch is a reference to the object inside facilitiesByCity
+        // We need to update it in place so that the final collection reflects the merge
+        Object.assign(bestMatch, merged);
       } else {
         // No match found, treat as new facility
         newSecondSetFacilities.push(item);
