@@ -84,7 +84,7 @@ export class Facility {
     let result = `${this.streetName} ${this.streetNumber}`;
 
     if (this.flatNumber)
-      result += `lok. ${this.flatNumber}`;
+      result += ` lok. ${this.flatNumber}`;
 
     result += `, ${this.postalCode} ${this.city}`;
 
