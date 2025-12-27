@@ -1,14 +1,8 @@
 import { CreateFacilityParams } from 'src/facilities/facilities.service';
-import { SemanticMatcher } from './semantic-matcher';
-import Embedding from './embedding';
-
-type FacilityWithEmbedding = {
-  facility: CreateFacilityParams;
-  embedding: Embedding;
-};
+import { FacilityMatcher, FacilityWithEmbedding } from './facility-matcher';
 
 export default class ProviderAggregator {
-  private matcher = SemanticMatcher.getInstance();
+  private facilityMatcher = FacilityMatcher.getInstance();
 
   private combineUniqueElements<T>(first: T[], second: T[]) {
     return [...new Set([...first, ...second])];
@@ -46,84 +40,50 @@ export default class ProviderAggregator {
     };
   }
 
-  private getTextForEmbedding(f: CreateFacilityParams): string {
-    // Combine relevant fields to form a sentence describing the facility identity
-    return `${f.name} ${f.streetName || ''} ${f.streetNumber || ''} ${f.city || ''}`
-      .replace(/\s+/g, ' ').trim();
-  }
-
-  private areLocationsClose(
-    f1: CreateFacilityParams, f2: CreateFacilityParams
-  ): boolean {
-    const lngDiff = Math.abs(f1.location.lng - f2.location.lng);
-    const latDiff = Math.abs(f1.location.lat - f2.location.lat);
-
-    // ~200 meters difference roughly (0.002 deg approx 220m lat)
-    return lngDiff < 0.002 && latDiff < 0.002;
-  }
-
   async combineTwoSets(
     first: CreateFacilityParams[], second: CreateFacilityParams[]
   ): Promise<CreateFacilityParams[]> {
-    await this.matcher.init();
+    await this.facilityMatcher.init();
 
     // Group first set by city for optimization
-    const facilitiesByCity = new Map<string, FacilityWithEmbedding[]>();
+    const facilitiesByCity = new Map<string, FacilityWithEmbedding<CreateFacilityParams>[]>();
 
     // Process first set (source of truth / base set)
     for (const item of first) {
-      const cityKey = (item.postalCode || 'unknown').toLowerCase();
-      if (!facilitiesByCity.has(cityKey)) {
-        facilitiesByCity.set(cityKey, []);
+      const key = item.postalCode;
+      if (!facilitiesByCity.has(key)) {
+        facilitiesByCity.set(key, []);
       }
 
-      const embedding = await this.matcher.generateEmbedding(
-        this.getTextForEmbedding(item)
+      const embedding = await this.facilityMatcher.generateEmbedding(
+        this.facilityMatcher.getTextForEmbedding(item)
       );
-      facilitiesByCity.get(cityKey)!.push({ facility: item, embedding });
+      facilitiesByCity.get(key)!.push({ facility: item, embedding });
     }
 
     const newSecondSetFacilities: CreateFacilityParams[] = [];
 
     // Process second set and look for matches in the first set
     for (const item of second) {
-      const cityKey = (item.postalCode || 'unknown').toLowerCase();
-      const candidates = facilitiesByCity.get(cityKey) || [];
+      const key = item.postalCode;
+      const candidates = facilitiesByCity.get(key) || [];
 
       if (candidates.length === 0) {
         newSecondSetFacilities.push(item);
         continue;
       }
 
-      const itemEmbedding = await this.matcher.generateEmbedding(
-        this.getTextForEmbedding(item)
-      );
-
-      let bestMatch: FacilityWithEmbedding | null = null;
-      let maxScore = -1;
-
-      for (const candidate of candidates) {
-        const similarity = itemEmbedding.similarity(candidate.embedding);
-        const isGeographicallyClose = this.areLocationsClose(
-          item, candidate.facility
-        );
-
-        // Heuristic: If similarity is very high (>0.90) AND physically close
-        if (similarity > 0.90 && isGeographicallyClose) {
-          if (similarity > maxScore) {
-            maxScore = similarity;
-            bestMatch = candidate;
-          }
-        }
-      }
+      const { match: bestMatch } = await this.facilityMatcher.findBestMatch(item, candidates);
 
       // Maintain a map of "final objects" derived from the first set.
       // If matched, update that object.
       // If not matched, add `item` (from second set) as a new object.
       if (bestMatch) {
         // Merge
-        const merged = this.combine(bestMatch.facility, item);
-        bestMatch.facility = merged;
+        const merged = this.combine(bestMatch, item);
+        // Note: bestMatch is a reference to the object inside facilitiesByCity
+        // We need to update it in place so that the final collection reflects the merge
+        Object.assign(bestMatch, merged);
       } else {
         // No match found, treat as new facility
         newSecondSetFacilities.push(item);
