@@ -1,6 +1,5 @@
 import ProviderAggregator from './provider-aggregator';
 import { CreateFacilityParams } from '../facilities/facilities.service';
-import Embedding from './embedding';
 
 // Mock the SemanticMatcher class for Unit Tests
 const mockGenerateEmbedding = jest.fn();
@@ -10,16 +9,10 @@ jest.mock('./semantic-matcher', () => ({
   SemanticMatcher: {
     getInstance: () => ({
       init: jest.fn().mockResolvedValue(undefined),
-      generateEmbedding: mockGenerateEmbedding
+      generateEmbedding: mockGenerateEmbedding,
+      cosineSimilarity: mockCosineSimilarity,
     }),
-  }
-}));
-
-jest.mock('./embedding', () => ({
-  __esModule: true,
-  default: jest.fn().mockImplementation(data => {
-    return { similarity: mockCosineSimilarity };
-  })
+  },
 }));
 
 const mockFacility = (overrides: Partial<CreateFacilityParams>): CreateFacilityParams => ({
@@ -47,13 +40,13 @@ const mockFacility = (overrides: Partial<CreateFacilityParams>): CreateFacilityP
   ...overrides,
 });
 
-describe(ProviderAggregator, () => {
+describe('ProviderAggregator (Unit)', () => {
   let aggregator: ProviderAggregator;
 
   beforeEach(() => {
     aggregator = new ProviderAggregator();
     jest.clearAllMocks();
-    mockGenerateEmbedding.mockResolvedValue(new Embedding([0.1, 0.2]));
+    mockGenerateEmbedding.mockResolvedValue([0.1, 0.2]);
     mockCosineSimilarity.mockReturnValue(0.1);
   });
 

@@ -30,7 +30,7 @@ const mockFacility = (overrides: Partial<CreateFacilityParams>): CreateFacilityP
   ...overrides,
 });
 
-describe('ProviderAggregator Integration with real SemanticMatcher', () => {
+describe('ProviderAggregator Integration (Real Model)', () => {
   let aggregator: ProviderAggregator;
 
   before(async () => {
@@ -41,40 +41,42 @@ describe('ProviderAggregator Integration with real SemanticMatcher', () => {
     aggregator = new ProviderAggregator();
   });
 
-  it('should merge when city appears in facility name', async () => {
-    const city = 'Warszawa';
+  it('should merge "Test Gym Warsaw" with "Test Gym" (city name in facility name)', async () => {
+    const city = 'Warsaw';
     const f1 = mockFacility({
-      name: `Test Gym ${city}`,
+      name: 'Test Gym Warsaw',
       city: city,
-      streetName: 'Zielona',
-      streetNumber: '26',
+      streetName: 'St',
+      streetNumber: '1',
       location: { lat: 52.0, lng: 21.0 }
     });
     const f2 = mockFacility({
       name: 'Test Gym',
       city: city,
-      streetName: 'Zielona',
-      streetNumber: '26',
+      streetName: 'St',
+      streetNumber: '1',
       location: { lat: 52.0001, lng: 21.0001 }
     });
 
     const result = await aggregator.combineTwoSets([f1], [f2]);
 
     assert.strictEqual(result.length, 1, 'Should have merged into 1 facility');
+    assert.strictEqual(result[0].city, 'Warsaw');
+    console.log('✅ Merged "Test Gym Warsaw" and "Test Gym" successfully.');
   });
 
-  it('should merge when street number appears in street name', async () => {
+  it('should merge messy address "Street 10" vs "Street" #10', async () => {
     const f1 = mockFacility({
       name: 'Super Gym',
-      streetName: 'Zielona',
+      streetName: 'Main St',
       streetNumber: '10',
       city: 'Krakow',
       location: { lat: 50.0, lng: 20.0 }
     });
     const f2 = mockFacility({
       name: 'Super Gym',
-      streetName: 'Zielona 10',
-      streetNumber: '10',
+      streetName: 'Main St 10',
+      streetNumber: '',
       city: 'Krakow',
       location: { lat: 50.0001, lng: 20.0001 }
     });
@@ -82,25 +84,47 @@ describe('ProviderAggregator Integration with real SemanticMatcher', () => {
     const result = await aggregator.combineTwoSets([f1], [f2]);
 
     assert.strictEqual(result.length, 1, 'Should have merged messy addresses');
+    console.log('✅ Merged messy addresses successfully.');
   });
 
-  it('should not merge facilities at similar location when names dont match', async () => {
+  it('should NOT merge distinct facilities "Fitness Platinium" vs "CityFit"', async () => {
     // Two different brands at similar location (e.g. same mall)
     const f1 = mockFacility({
-      name: 'Fitness Platinum',
-      city: 'Warszawa',
-      streetName: 'Targowa',
+      name: 'Fitness Platinium',
+      city: 'Warsaw',
+      streetName: 'Mall Street',
       location: { lat: 52.0, lng: 21.0 }
     });
     const f2 = mockFacility({
       name: 'CityFit',
-      city: 'Warszawa',
-      streetName: 'Targowa',
+      city: 'Warsaw',
+      streetName: 'Mall Street',
       location: { lat: 52.0001, lng: 21.0001 }
     });
 
     const result = await aggregator.combineTwoSets([f1], [f2]);
 
-    assert.strictEqual(result.length, 2, 'Should not have merged distinct gyms');
+    assert.strictEqual(result.length, 2, 'Should NOT have merged distinct gyms');
+    console.log('✅ Correctly kept distinct gyms separate.');
+  });
+
+  it('should merge "salsafit" vs "salsa fit" (space variation)', async () => {
+    const f1 = mockFacility({
+      name: 'salsafit',
+      streetName: 'Dance St',
+      city: 'Warsaw',
+      location: { lat: 52.0, lng: 21.0 }
+    });
+    const f2 = mockFacility({
+      name: 'salsa fit',
+      streetName: 'Dance St',
+      city: 'Warsaw',
+      location: { lat: 52.0001, lng: 21.0001 }
+    });
+
+    const result = await aggregator.combineTwoSets([f1], [f2]);
+
+    assert.strictEqual(result.length, 1, 'Should have merged space variation');
+    console.log('✅ Merged "salsafit" vs "salsa fit".');
   });
 });

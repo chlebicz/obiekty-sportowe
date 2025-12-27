@@ -1,10 +1,9 @@
 import { CreateFacilityParams } from 'src/facilities/facilities.service';
 import { SemanticMatcher } from './semantic-matcher';
-import Embedding from './embedding';
 
-type FacilityWithEmbedding = {
+type EnrichedFacility = {
   facility: CreateFacilityParams;
-  embedding: Embedding;
+  embedding: number[];
 };
 
 export default class ProviderAggregator {
@@ -48,8 +47,7 @@ export default class ProviderAggregator {
 
   private getTextForEmbedding(f: CreateFacilityParams): string {
     // Combine relevant fields to form a sentence describing the facility identity
-    return `${f.name} ${f.streetName || ''} ${f.streetNumber || ''} ${f.city || ''}`
-      .replace(/\s+/g, ' ').trim();
+    return `${f.name} ${f.streetName || ''} ${f.streetNumber || ''} ${f.city || ''}`.replace(/\s+/g, ' ').trim();
   }
 
   private areLocationsClose(
@@ -62,83 +60,124 @@ export default class ProviderAggregator {
     return lngDiff < 0.002 && latDiff < 0.002;
   }
 
+  private levenshteinDistance(a: string, b: string): number {
+    if (a.length === 0) return b.length;
+    if (b.length === 0) return a.length;
+
+    const matrix = Array.from({ length: b.length + 1 }, (_, i) => [i]);
+    for (let i = 0; i <= a.length; i++) matrix[0][i] = i;
+
+    for (let i = 1; i <= b.length; i++) {
+      for (let j = 1; j <= a.length; j++) {
+        if (b.charAt(i - 1) === a.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j - 1] + 1, // substitution
+            Math.min(
+              matrix[i][j - 1] + 1, // insertion
+              matrix[i - 1][j] + 1 // deletion
+            )
+          );
+        }
+      }
+    }
+
+    return matrix[b.length][a.length];
+  }
+
+  private normalizedLevenshtein(a: string, b: string): number {
+    const maxLen = Math.max(a.length, b.length);
+    if (maxLen === 0) return 1.0;
+    const distance = this.levenshteinDistance(a.toLowerCase(), b.toLowerCase());
+    return 1.0 - distance / maxLen;
+  }
+
   async combineTwoSets(
     first: CreateFacilityParams[], second: CreateFacilityParams[]
   ): Promise<CreateFacilityParams[]> {
     await this.matcher.init();
 
     // Group first set by city for optimization
-    const facilitiesByCity = new Map<string, FacilityWithEmbedding[]>();
+    const firstByCity = new Map<string, EnrichedFacility[]>();
 
     // Process first set (source of truth / base set)
     for (const item of first) {
-      const cityKey = (item.city || 'unknown').toLowerCase();
-      if (!facilitiesByCity.has(cityKey)) {
-        facilitiesByCity.set(cityKey, []);
-      }
+        const cityKey = (item.city || 'unknown').toLowerCase();
+        if (!firstByCity.has(cityKey)) {
+            firstByCity.set(cityKey, []);
+        }
 
-      const embedding = await this.matcher.generateEmbedding(
-        this.getTextForEmbedding(item)
-      );
-      facilitiesByCity.get(cityKey)!.push({ facility: item, embedding });
+        const embedding = await this.matcher.generateEmbedding(this.getTextForEmbedding(item));
+        firstByCity.get(cityKey)!.push({ facility: item, embedding });
     }
 
-    const newSecondSetFacilities: CreateFacilityParams[] = [];
+    const result: CreateFacilityParams[] = [];
 
     // Process second set and look for matches in the first set
     for (const item of second) {
-      const cityKey = (item.city || 'unknown').toLowerCase();
-      const candidates = facilitiesByCity.get(cityKey) || [];
+        const cityKey = (item.city || 'unknown').toLowerCase();
+        const candidates = firstByCity.get(cityKey) || [];
 
-      if (candidates.length === 0) {
-        newSecondSetFacilities.push(item);
-        continue;
-      }
-
-      const itemEmbedding = await this.matcher.generateEmbedding(
-        this.getTextForEmbedding(item)
-      );
-
-      let bestMatch: FacilityWithEmbedding | null = null;
-      let maxScore = -1;
-
-      for (const candidate of candidates) {
-        const similarity = itemEmbedding.similarity(candidate.embedding);
-        const isGeographicallyClose = this.areLocationsClose(
-          item, candidate.facility
-        );
-
-        // Heuristic: If similarity is very high (>0.90) AND physically close
-        if (similarity > 0.90 && isGeographicallyClose) {
-          if (similarity > maxScore) {
-            maxScore = similarity;
-            bestMatch = candidate;
-          }
+        if (candidates.length === 0) {
+            result.push(item);
+            continue;
         }
-      }
 
-      // Maintain a map of "final objects" derived from the first set.
-      // If matched, update that object.
-      // If not matched, add `item` (from second set) as a new object.
-      if (bestMatch) {
-        // Merge
-        const merged = this.combine(bestMatch.facility, item);
-        bestMatch.facility = merged;
-      } else {
-        // No match found, treat as new facility
-        newSecondSetFacilities.push(item);
-      }
+        const itemEmbedding = await this.matcher.generateEmbedding(this.getTextForEmbedding(item));
+        const itemText = this.getTextForEmbedding(item);
+
+        let bestMatch: EnrichedFacility | null = null;
+        let maxScore = -1;
+
+        for (const candidate of candidates) {
+            const candidateText = this.getTextForEmbedding(candidate.facility);
+            const similarity = this.matcher.cosineSimilarity(itemEmbedding, candidate.embedding);
+            const isGeographicallyClose = this.areLocationsClose(item, candidate.facility);
+            const nameSimilarity = this.normalizedLevenshtein(item.name, candidate.facility.name);
+
+            // Hybrid Matching Logic
+            // 1. High Semantic Similarity (General case, e.g. messy address)
+            // 2. Moderate Semantic Similarity AND High Name Similarity (e.g. "salsafit" vs "salsa fit")
+
+            let isMatch = false;
+
+            if (isGeographicallyClose) {
+              if (similarity > 0.90) {
+                isMatch = true;
+              } else if (similarity > 0.80 && nameSimilarity > 0.85) {
+                isMatch = true;
+              }
+            }
+
+            if (isMatch) {
+                // If multiple candidates match, pick the one with highest semantic score
+                if (similarity > maxScore) {
+                    maxScore = similarity;
+                    bestMatch = candidate;
+                }
+            }
+        }
+
+        if (bestMatch) {
+            // Merge
+            const merged = this.combine(bestMatch.facility, item);
+            bestMatch.facility = merged;
+        } else {
+            // No match found, treat as new facility
+            result.push(item);
+        }
     }
 
     // Now collect all items: the ones from `first` (some might be merged) and the new ones from `second` (in `result`)
     const finalSet: CreateFacilityParams[] = [];
 
-    for (const list of facilitiesByCity.values()) {
-      for (const enriched of list) {
-        finalSet.push(enriched.facility);
-      }
+    for (const list of firstByCity.values()) {
+        for (const enriched of list) {
+            finalSet.push(enriched.facility);
+        }
     }
 
-    return [...finalSet, ...newSecondSetFacilities];
+    return [...finalSet, ...result];
   }
 }
