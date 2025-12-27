@@ -50,7 +50,7 @@ export default class ProviderAggregator {
 
     // Process first set (source of truth / base set)
     for (const item of first) {
-      const cityKey = (item.city || 'unknown').toLowerCase();
+      const cityKey = (item.postalCode || 'unknown').toLowerCase();
       if (!facilitiesByCity.has(cityKey)) {
         facilitiesByCity.set(cityKey, []);
       }
@@ -65,7 +65,7 @@ export default class ProviderAggregator {
 
     // Process second set and look for matches in the first set
     for (const item of second) {
-      const cityKey = (item.city || 'unknown').toLowerCase();
+      const cityKey = (item.postalCode || 'unknown').toLowerCase();
       const candidates = facilitiesByCity.get(cityKey) || [];
 
       if (candidates.length === 0) {
@@ -94,8 +94,8 @@ export default class ProviderAggregator {
     const finalSet: CreateFacilityParams[] = [];
 
     for (const list of facilitiesByCity.values()) {
-      for (const enriched of list) {
-        finalSet.push(enriched.facility);
+      for (const facilityWithEmbedding of list) {
+        finalSet.push(facilityWithEmbedding.facility);
       }
     }
 
