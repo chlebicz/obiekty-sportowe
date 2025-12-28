@@ -103,4 +103,42 @@ describe('ProviderAggregator Integration with real SemanticMatcher', () => {
 
     assert.strictEqual(result.length, 2, 'Should not have merged distinct gyms');
   });
+
+  it('should not merge names of similar meaning but different wording', async () => {
+    const f1 = mockFacility({
+      name: 'Blue Gym',
+      city: 'London',
+      streetName: 'High St',
+      location: { lat: 51.5, lng: -0.1 }
+    });
+    const f2 = mockFacility({
+      name: 'Blue Fitness',
+      city: 'London',
+      streetName: 'High St',
+      location: { lat: 51.5001, lng: -0.1001 }
+    });
+
+    const result = await aggregator.combineTwoSets([f1], [f2]);
+
+    assert.strictEqual(result.length, 2, 'Should not have merged Blue Gym and Blue Fitness');
+  });
+
+  it('should merge "salsafit" vs "salsa fit" (space variation)', async () => {
+    const f1 = mockFacility({
+      name: 'salsafit',
+      streetName: 'Dance St',
+      city: 'Warsaw',
+      location: { lat: 52.0, lng: 21.0 }
+    });
+    const f2 = mockFacility({
+      name: 'salsa fit',
+      streetName: 'Dance St',
+      city: 'Warsaw',
+      location: { lat: 52.0001, lng: 21.0001 }
+    });
+
+    const result = await aggregator.combineTwoSets([f1], [f2]);
+
+    assert.strictEqual(result.length, 1, 'Should have merged space variation');
+  });
 });
