@@ -1,11 +1,13 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 import type { Point } from 'typeorm';
 
 export type FacilityProvider = 'multisport' | 'medicover' | 'fitprofit';
 
-export type ExportedFacility = Partial<Facility> | {
-  location?: { lng: number, lat: number }
-};
+export type ExportedFacility =
+  | Partial<Facility>
+  | {
+      location?: { lng: number; lat: number };
+    };
 
 @Entity('facilities')
 export class Facility {
@@ -17,14 +19,15 @@ export class Facility {
 
   @Column({
     type: 'jsonb',
-    nullable: true
+    nullable: true,
   })
   sources: { provider: FacilityProvider; externalId: string }[];
 
+  @Index({ spatial: true })
   @Column({
     type: 'geometry',
     spatialFeatureType: 'Point',
-    srid: 4326
+    srid: 4326,
   })
   location: Point;
 
@@ -48,19 +51,19 @@ export class Facility {
 
   @Column({
     type: 'text',
-    array: true
+    array: true,
   })
   serviceTypes: string[];
 
   @Column({
     type: 'text',
-    array: true
+    array: true,
   })
   filters: string[];
 
   @Column({
     type: 'text',
-    array: true
+    array: true,
   })
   cards: string[];
 
@@ -82,14 +85,14 @@ export class Facility {
   @Column({
     type: 'text',
     array: true,
-    default: []
+    default: [],
   })
   images: string[];
 
   @Column({
     type: 'text',
     array: true,
-    default: []
+    default: [],
   })
   openHours: string[];
 
@@ -101,17 +104,32 @@ export class Facility {
 
   export(
     includeFields: (keyof Facility)[] = [
-      'id', 'name', 'streetName', 'streetNumber', 'postalCode',
-      'city', 'flatNumber', 'district', 'serviceTypes',
-      'cards', 'phone', 'email', 'website', 'fanpage', 'description',
-      'images', 'openHours', 'seasonal', 'open24h', 'filters',
-      'location'
-    ]
+      'id',
+      'name',
+      'streetName',
+      'streetNumber',
+      'postalCode',
+      'city',
+      'flatNumber',
+      'district',
+      'serviceTypes',
+      'cards',
+      'phone',
+      'email',
+      'website',
+      'fanpage',
+      'description',
+      'images',
+      'openHours',
+      'seasonal',
+      'open24h',
+      'filters',
+      'location',
+    ],
   ) {
     const result: ExportedFacility = {};
 
-    for (const field of includeFields)
-      result[field] = this[field] as any;
+    for (const field of includeFields) result[field] = this[field] as any;
 
     if (includeFields.includes('location')) {
       const [lng, lat] = this.location.coordinates;
