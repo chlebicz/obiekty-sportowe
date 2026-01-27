@@ -71,19 +71,41 @@ export default class ProviderAggregator {
     const facilitiesByCity = new Map<string, FacilityWithEmbedding[]>();
 
     // Process first set (source of truth / base set)
-    for (const item of first) {
+    const firstEmbeddings = await Promise.all(
+      first.map((item) =>
+        this.matcher.generateEmbedding(this.getTextForEmbedding(item)),
+      ),
+    );
+
+    first.forEach((item, index) => {
       const cityKey = (item.city || 'unknown').toLowerCase();
       if (!facilitiesByCity.has(cityKey)) {
         facilitiesByCity.set(cityKey, []);
       }
-
-      const embedding = await this.matcher.generateEmbedding(
-        this.getTextForEmbedding(item)
-      );
-      facilitiesByCity.get(cityKey)!.push({ facility: item, embedding });
-    }
+      facilitiesByCity
+        .get(cityKey)!
+        .push({ facility: item, embedding: firstEmbeddings[index] });
+    });
 
     const newSecondSetFacilities: CreateFacilityParams[] = [];
+
+    // Pre-calculate embeddings for second set items that have candidates
+    const itemsNeedingEmbedding = second.filter((item) => {
+      const cityKey = (item.city || 'unknown').toLowerCase();
+      const candidates = facilitiesByCity.get(cityKey) || [];
+      return candidates.length > 0;
+    });
+
+    const secondEmbeddings = await Promise.all(
+      itemsNeedingEmbedding.map((item) =>
+        this.matcher.generateEmbedding(this.getTextForEmbedding(item)),
+      ),
+    );
+
+    const secondEmbeddingsMap = new Map<CreateFacilityParams, Embedding>();
+    itemsNeedingEmbedding.forEach((item, index) => {
+      secondEmbeddingsMap.set(item, secondEmbeddings[index]);
+    });
 
     // Process second set and look for matches in the first set
     for (const item of second) {
@@ -95,9 +117,7 @@ export default class ProviderAggregator {
         continue;
       }
 
-      const itemEmbedding = await this.matcher.generateEmbedding(
-        this.getTextForEmbedding(item)
-      );
+      const itemEmbedding = secondEmbeddingsMap.get(item)!;
 
       let bestMatch: FacilityWithEmbedding | null = null;
       let maxScore = -1;
