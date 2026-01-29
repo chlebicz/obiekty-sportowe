@@ -50,8 +50,20 @@ export function isSingleton(obj: MapObj): obj is SingletonMapObj {
 export class FacilitiesService {
   constructor(private apiClient: ApiClient) {}
 
-  // TODO: limit elements in cache
+  private readonly CACHE_LIMIT = 100;
   private facilityCache = new Map<number, Facility>();
+
+  private updateCache(facility: Facility) {
+    if (this.facilityCache.has(facility.id)) {
+      this.facilityCache.delete(facility.id);
+    } else if (this.facilityCache.size >= this.CACHE_LIMIT) {
+      const firstKey = this.facilityCache.keys().next().value;
+      if (firstKey !== undefined) {
+        this.facilityCache.delete(firstKey);
+      }
+    }
+    this.facilityCache.set(facility.id, facility);
+  }
 
   async findOnMap(
     {
@@ -145,7 +157,7 @@ export class FacilitiesService {
           .map((props: FacilityProps) => new Facility(props));
 
         for (const facility of result)
-          this.facilityCache.set(facility.id, facility);
+          this.updateCache(facility);
 
         return result;
       })
@@ -158,7 +170,10 @@ export class FacilitiesService {
 
   async getFacilityData(id: number) {
     const cachedFacility = this.facilityCache.get(id);
-    if (cachedFacility) return cachedFacility;
+    if (cachedFacility) {
+      this.updateCache(cachedFacility);
+      return cachedFacility;
+    }
 
     let props: FacilityProps;
     try {
@@ -168,7 +183,7 @@ export class FacilitiesService {
     }
 
     const result = new Facility(props);
-    this.facilityCache.set(result.id, result);
+    this.updateCache(result);
     return result;
   }
 
