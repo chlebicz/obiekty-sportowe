@@ -6,9 +6,9 @@ describe(DummyMedicoverFetcher, () => {
       { 'test-card': 1 },
       {
         cards: {
-          'test-card': [{} as any]
-        }
-      }
+          'test-card': [{} as any],
+        },
+      },
     );
 
     await expect(fetcher.fetchWithCard('test-card')).resolves.toHaveLength(1);

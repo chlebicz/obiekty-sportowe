@@ -1,7 +1,8 @@
-export const baseUrl = 'https://wys.benefitsystems.pl/api/v2/map/bounds'
-  + '/matching/48.44684889888373/12.219080041581396'
-  + '/55.43163999460261/30.785974572831396'
-  + '/52.075598837699346/21.502527307206396/';
+export const baseUrl =
+  'https://wys.benefitsystems.pl/api/v2/map/bounds' +
+  '/matching/48.44684889888373/12.219080041581396' +
+  '/55.43163999460261/30.785974572831396' +
+  '/52.075598837699346/21.502527307206396/';
 
 export const multisportCards = {
   1: 'MultiSport Plus',
@@ -14,10 +15,11 @@ export const multisportCards = {
   8: 'MultiSport Classic Dziecko',
   9: 'MultiActive Dziecko / MultiSport Light Dziecko',
   19: 'MultiSport Senior',
-  25: 'MultiSport Student'
+  25: 'MultiSport Student',
 };
 
-export const multisportActivites = { // categories
+export const multisportActivites = {
+  // categories
   6: 'Aqua aerobik',
   87: 'Badminton',
   7: 'Basen',
@@ -73,10 +75,11 @@ export const multisportActivites = { // categories
   124: 'Wake park',
   95: 'Wrotki',
   1: 'Zajęcia fitness',
-  18: 'Zumba'
+  18: 'Zumba',
 };
 
-export const multisportFilters = { // parameters
+export const multisportFilters = {
+  // parameters
   58: 'Aquapark',
   3: 'Bezpłatny parking',
   15: 'Brak dopłaty w obiekcie',
@@ -97,5 +100,5 @@ export const multisportFilters = { // parameters
   4: 'Udogodnienia dla rodziców z dziećmi lub kobiet w ciąży',
   60: 'Usługa sezonowa',
   1: 'Wejście OPEN',
-  13: 'Wymagana rezerwacja'
+  13: 'Wymagana rezerwacja',
 };

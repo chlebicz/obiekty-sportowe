@@ -34,7 +34,10 @@ export class SemanticMatcher {
     // Generate embedding
     // pooling: 'mean' averages the token embeddings to get a sentence embedding
     // normalize: true ensures the vector has length 1 (L2 norm), making dot product equal to cosine similarity
-    const output = await this.extractor!(cleanedText, { pooling: 'mean', normalize: true });
+    const output = await this.extractor!(cleanedText, {
+      pooling: 'mean',
+      normalize: true,
+    });
 
     // Convert Tensor to standard number array
     return new Embedding(Array.from(output.data));

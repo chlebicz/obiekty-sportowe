@@ -14,9 +14,9 @@ describe('FacilitiesController', () => {
         FacilitiesService,
         {
           provide: getRepositoryToken(FacilityRepository),
-          useValue: {}
-        }
-      ]
+          useValue: {},
+        },
+      ],
     }).compile();
 
     controller = module.get<FacilitiesController>(FacilitiesController);

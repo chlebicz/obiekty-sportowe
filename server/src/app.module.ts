@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
-import { AppService } from './app.service'
+import { AppService } from './app.service';
 import { FacilitiesModule } from './facilities/facilities.module';
 import { postgresql } from 'config.json';
 import { Facility } from './facilities/facility.entity';
@@ -18,7 +18,7 @@ import { Facility } from './facilities/facility.entity';
       entities: [Facility],
       synchronize: true,
       extra: {
-        pool_mode: 'session'
+        pool_mode: 'session',
       },
     }),
     FacilitiesModule,

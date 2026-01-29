@@ -4,7 +4,7 @@ import {
   Get,
   Param,
   ParseFloatPipe,
-  Query
+  Query,
 } from '@nestjs/common';
 import { FacilitiesService } from './facilities.service';
 
@@ -23,34 +23,34 @@ export class FacilitiesController {
     @Query('nelat', ParseFloatPipe) northEastLat: number,
     @Query('swlng', ParseFloatPipe) southWestLng: number,
     @Query('swlat', ParseFloatPipe) southWestLat: number,
-    @Query('page') rawPage: string
+    @Query('page') rawPage: string,
   ) {
     // little workaround
-    if (typeof cards === 'string')
-      cards = [cards];
-    if (typeof serviceTypes === 'string')
-      serviceTypes = [serviceTypes];
-    if (typeof filters === 'string')
-      filters = [filters];
+    if (typeof cards === 'string') cards = [cards];
+    if (typeof serviceTypes === 'string') serviceTypes = [serviceTypes];
+    if (typeof filters === 'string') filters = [filters];
 
     const page = parseInt(rawPage);
-    if (rawPage && isNaN(page))
-      throw new BadRequestException('invalid page');
+    if (rawPage && isNaN(page)) throw new BadRequestException('invalid page');
 
     if (orderBy && orderBy !== 'name')
-      throw new BadRequestException('invalid sorting option')
+      throw new BadRequestException('invalid sorting option');
 
     const foundFacilities = await this.facilitiesService.search({
-      name, filters, serviceTypes, cards, orderBy: orderBy as any,
+      name,
+      filters,
+      serviceTypes,
+      cards,
+      orderBy: orderBy as any,
       bounds: {
         northEast: { lng: northEastLng, lat: northEastLat },
-        southWest: { lng: southWestLng, lat: southWestLat }
+        southWest: { lng: southWestLng, lat: southWestLat },
       },
-      page
+      page,
     });
 
     return {
-      objects: foundFacilities
+      objects: foundFacilities,
     };
   }
 
@@ -63,26 +63,26 @@ export class FacilitiesController {
     @Query('nelng', ParseFloatPipe) northEastLng: number,
     @Query('nelat', ParseFloatPipe) northEastLat: number,
     @Query('swlng', ParseFloatPipe) southWestLng: number,
-    @Query('swlat', ParseFloatPipe) southWestLat: number
+    @Query('swlat', ParseFloatPipe) southWestLat: number,
   ) {
     // little workaround
-    if (typeof cards === 'string')
-      cards = [cards];
-    if (typeof serviceTypes === 'string')
-      serviceTypes = [serviceTypes];
-    if (typeof filters === 'string')
-      filters = [filters];
+    if (typeof cards === 'string') cards = [cards];
+    if (typeof serviceTypes === 'string') serviceTypes = [serviceTypes];
+    if (typeof filters === 'string') filters = [filters];
 
     const foundFacilities = await this.facilitiesService.findOnMap({
       bounds: {
         northEast: { lng: northEastLng, lat: northEastLat },
-        southWest: { lng: southWestLng, lat: southWestLat }
+        southWest: { lng: southWestLng, lat: southWestLat },
       },
-      name, filters, serviceTypes, cards
+      name,
+      filters,
+      serviceTypes,
+      cards,
     });
 
     return {
-      objects: foundFacilities
+      objects: foundFacilities,
     };
   }
 
@@ -111,8 +111,7 @@ export class FacilitiesController {
   @Get('/:id')
   getFacilityData(@Param('id') rawId: string) {
     const id = parseInt(rawId);
-    if (isNaN(id))
-      throw new Error('id has to be a number');
+    if (isNaN(id)) throw new Error('id has to be a number');
 
     return this.facilitiesService.getFacilityData(id);
   }

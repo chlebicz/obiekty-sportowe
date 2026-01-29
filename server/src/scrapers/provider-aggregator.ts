@@ -15,7 +15,8 @@ export default class ProviderAggregator {
   }
 
   combine(
-    first: CreateFacilityParams, second: CreateFacilityParams
+    first: CreateFacilityParams,
+    second: CreateFacilityParams,
   ): CreateFacilityParams {
     return {
       cards: [...first.cards, ...second.cards],
@@ -34,26 +35,27 @@ export default class ProviderAggregator {
       postalCode: first.postalCode || second.postalCode,
       seasonal: first.seasonal || second.seasonal,
       serviceTypes: this.combineUniqueElements(
-        first.serviceTypes, second.serviceTypes
+        first.serviceTypes,
+        second.serviceTypes,
       ),
       sources: [...first.sources, ...second.sources],
       streetName: first.streetName || second.streetName,
       streetNumber: first.streetNumber || second.streetNumber,
       website: first.website || second.website,
-      filters: this.combineUniqueElements(
-        first.filters, second.filters
-      )
+      filters: this.combineUniqueElements(first.filters, second.filters),
     };
   }
 
   private getTextForEmbedding(f: CreateFacilityParams): string {
     // Combine relevant fields to form a sentence describing the facility identity
     return `${f.name} ${f.streetName || ''} ${f.streetNumber || ''} ${f.city || ''}`
-      .replace(/\s+/g, ' ').trim();
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 
   private areLocationsClose(
-    f1: CreateFacilityParams, f2: CreateFacilityParams
+    f1: CreateFacilityParams,
+    f2: CreateFacilityParams,
   ): boolean {
     const lngDiff = Math.abs(f1.location.lng - f2.location.lng);
     const latDiff = Math.abs(f1.location.lat - f2.location.lat);
@@ -63,7 +65,8 @@ export default class ProviderAggregator {
   }
 
   async combineTwoSets(
-    first: CreateFacilityParams[], second: CreateFacilityParams[]
+    first: CreateFacilityParams[],
+    second: CreateFacilityParams[],
   ): Promise<CreateFacilityParams[]> {
     await this.matcher.init();
 
@@ -125,11 +128,12 @@ export default class ProviderAggregator {
       for (const candidate of candidates) {
         const similarity = itemEmbedding.similarity(candidate.embedding);
         const isGeographicallyClose = this.areLocationsClose(
-          item, candidate.facility
+          item,
+          candidate.facility,
         );
 
         // Heuristic: If similarity is very high (>0.90) AND physically close
-        if (similarity > 0.90 && isGeographicallyClose) {
+        if (similarity > 0.9 && isGeographicallyClose) {
           if (similarity > maxScore) {
             maxScore = similarity;
             bestMatch = candidate;

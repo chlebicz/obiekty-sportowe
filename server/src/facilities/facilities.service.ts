@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { FacilityRepository, Location } from './facility.repository';
 import {
-  ExportedFacility, Facility, FacilityProvider
+  ExportedFacility,
+  Facility,
+  FacilityProvider,
 } from './facility.entity';
 
 export type CreateFacilityParams = {
   name: string;
-  sources: { provider: FacilityProvider, externalId: string }[];
+  sources: { provider: FacilityProvider; externalId: string }[];
   location: Location;
   streetName: string;
   streetNumber: string;
@@ -26,64 +28,61 @@ export type CreateFacilityParams = {
   open24h: boolean;
   seasonal: boolean;
   cards: string[];
-}
+};
 
 @Injectable()
 export class FacilitiesService {
-  constructor(
-    private readonly facilitiesRepo: FacilityRepository
-  ) {}
+  constructor(private readonly facilitiesRepo: FacilityRepository) {}
 
   async findOnMap({
-    name, filters, serviceTypes, cards,
-    bounds: {
-      northEast,
-      southWest
-    }
+    name,
+    filters,
+    serviceTypes,
+    cards,
+    bounds: { northEast, southWest },
   }: {
     bounds: {
-      northEast: Location,
-      southWest: Location
-    },
-    serviceTypes?: string[],
-    filters?: string[],
-    cards?: string[],
-    name?: string
+      northEast: Location;
+      southWest: Location;
+    };
+    serviceTypes?: string[];
+    filters?: string[];
+    cards?: string[];
+    name?: string;
   }) {
     const raw = await this.facilitiesRepo.findOnMap({
       bounds: {
         neLat: northEast.lat,
         neLng: northEast.lng,
         swLat: southWest.lat,
-        swLng: southWest.lng
+        swLng: southWest.lng,
       },
       serviceTypes: serviceTypes || [],
       filters: filters || [],
       cards: cards || [],
-      name
+      name,
     });
 
-    return raw.map(rawObj => {
+    return raw.map((rawObj) => {
       const [lng, lat] = rawObj.value.location.coordinates;
       const { count, id } = rawObj.value;
 
       if (rawObj.type === 'cluster')
         return {
           type: 'cluster',
-          value: { count, location: { lng, lat } }
+          value: { count, location: { lng, lat } },
         };
 
       return {
         type: 'singleton',
-        value: { id, location: { lng, lat } }
+        value: { id, location: { lng, lat } },
       };
     });
   }
 
   async getFacilityData(id: number) {
     const facility = await this.facilitiesRepo.findOneBy({ id });
-    if (!facility)
-      throw new Error('unknown facility id');
+    if (!facility) throw new Error('unknown facility id');
 
     return facility.export();
   }
@@ -111,7 +110,7 @@ export class FacilitiesService {
   }
 
   async createMany(params: CreateFacilityParams[]) {
-    const facilities = params.map(p => this.toFacility(p));
+    const facilities = params.map((p) => this.toFacility(p));
     await this.facilitiesRepo.save(facilities, { chunk: 100 });
     return facilities;
   }
@@ -137,14 +136,14 @@ export class FacilitiesService {
     openHours,
     seasonal = false,
     cards = [],
-    filters
+    filters,
   }: CreateFacilityParams): Facility {
     return this.facilitiesRepo.create({
       name,
       sources,
       location: {
         type: 'Point',
-        coordinates: [location.lng, location.lat]
+        coordinates: [location.lng, location.lat],
       },
       streetName,
       streetNumber,
@@ -163,28 +162,42 @@ export class FacilitiesService {
       open24h,
       seasonal,
       cards,
-      filters
+      filters,
     });
   }
 
   updateFacility(id: number, updated: Partial<CreateFacilityParams>) {
     const facility: Partial<Facility> = {};
     const copyFields: (keyof Facility & keyof CreateFacilityParams)[] = [
-      'cards', 'city', 'description', 'district', 'email', 'fanpage',
-      'filters', 'flatNumber', 'images', 'name', 'open24h', 'openHours',
-      'phone', 'postalCode', 'seasonal', 'serviceTypes', 'streetName',
-      'streetNumber', 'website'
+      'cards',
+      'city',
+      'description',
+      'district',
+      'email',
+      'fanpage',
+      'filters',
+      'flatNumber',
+      'images',
+      'name',
+      'open24h',
+      'openHours',
+      'phone',
+      'postalCode',
+      'seasonal',
+      'serviceTypes',
+      'streetName',
+      'streetNumber',
+      'website',
     ];
     for (const field of copyFields) {
-      if (updated[field])
-        facility[field] = updated[field] as any;
+      if (updated[field]) facility[field] = updated[field] as any;
     }
 
     if (updated.location) {
       const { lng, lat } = updated.location;
       facility.location = { type: 'Point', coordinates: [lng, lat] };
     }
-  
+
     return this.facilitiesRepo.update({ id }, facility);
   }
 
@@ -193,56 +206,66 @@ export class FacilitiesService {
   }
 
   async search({
-    name, filters, serviceTypes, cards, orderBy, page,
-    bounds: {
-      northEast,
-      southWest
-    }
+    name,
+    filters,
+    serviceTypes,
+    cards,
+    orderBy,
+    page,
+    bounds: { northEast, southWest },
   }: {
-    name?: string,
-    filters?: string[],
-    serviceTypes?: string[],
-    cards?: string[],
-    orderBy?: 'name',
+    name?: string;
+    filters?: string[];
+    serviceTypes?: string[];
+    cards?: string[];
+    orderBy?: 'name';
     bounds: {
-      northEast: Location,
-      southWest: Location
-    },
-    page?: number
+      northEast: Location;
+      southWest: Location;
+    };
+    page?: number;
   }): Promise<ExportedFacility[]> {
     const raw = await this.facilitiesRepo.fullSearch({
       bounds: {
         neLat: northEast.lat,
         neLng: northEast.lng,
         swLat: southWest.lat,
-        swLng: southWest.lng
+        swLng: southWest.lng,
       },
       serviceTypes: serviceTypes || [],
       filters: filters || [],
       cards: cards || [],
       orderBy: orderBy || 'name',
       page: page || 0,
-      name
+      name,
     });
 
-    return raw.map(
-      el => el.export()
-    );
+    return raw.map((el) => el.export());
   }
 
   fuzzySearch(input: string) {
     return this.facilitiesRepo.fuzzySearch(input);
   }
 
-  distinctValuesCache: {
-    [k in 'serviceTypes' | 'filters' | 'cards']?: string[]
+  readonly CACHE_TTL = 3600 * 1000;
+  private distinctValuesCache: {
+    [k in 'serviceTypes' | 'filters' | 'cards']?: {
+      data: string[];
+      timestamp: number;
+    };
   } = {};
   async getDistinctValues(arrayField: 'serviceTypes' | 'filters' | 'cards') {
     const cached = this.distinctValuesCache[arrayField];
-    if (cached) return cached;
+    if (cached && Date.now() - cached.timestamp < this.CACHE_TTL)
+      return cached.data;
 
-    const fetched = await this.facilitiesRepo.getDistinctValues(arrayField);
-    this.distinctValuesCache[arrayField] = fetched;
+    const fetched = (await this.facilitiesRepo.getDistinctValues(
+      arrayField,
+    )) as string[];
+    this.distinctValuesCache[arrayField] = {
+      data: fetched,
+      timestamp: Date.now(),
+    };
     return fetched;
   }
 }

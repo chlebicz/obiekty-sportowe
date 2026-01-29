@@ -5,7 +5,9 @@ import { CreateFacilityParams } from '../../src/facilities/facilities.service';
 import { SemanticMatcher } from '../../src/scrapers/semantic-matcher';
 
 // Helper to create dummy facilities
-const mockFacility = (overrides: Partial<CreateFacilityParams>): CreateFacilityParams => ({
+const mockFacility = (
+  overrides: Partial<CreateFacilityParams>,
+): CreateFacilityParams => ({
   name: 'Default Gym',
   streetName: 'Default St',
   streetNumber: '1',
@@ -48,14 +50,14 @@ describe('ProviderAggregator Integration with real SemanticMatcher', () => {
       city: city,
       streetName: 'Zielona',
       streetNumber: '26',
-      location: { lat: 52.0, lng: 21.0 }
+      location: { lat: 52.0, lng: 21.0 },
     });
     const f2 = mockFacility({
       name: 'Test Gym',
       city: city,
       streetName: 'Zielona',
       streetNumber: '26',
-      location: { lat: 52.0001, lng: 21.0001 }
+      location: { lat: 52.0001, lng: 21.0001 },
     });
 
     const result = await aggregator.combineTwoSets([f1], [f2]);
@@ -69,14 +71,14 @@ describe('ProviderAggregator Integration with real SemanticMatcher', () => {
       streetName: 'Zielona',
       streetNumber: '10',
       city: 'Krakow',
-      location: { lat: 50.0, lng: 20.0 }
+      location: { lat: 50.0, lng: 20.0 },
     });
     const f2 = mockFacility({
       name: 'Super Gym',
       streetName: 'Zielona 10',
       streetNumber: '10',
       city: 'Krakow',
-      location: { lat: 50.0001, lng: 20.0001 }
+      location: { lat: 50.0001, lng: 20.0001 },
     });
 
     const result = await aggregator.combineTwoSets([f1], [f2]);
@@ -90,17 +92,21 @@ describe('ProviderAggregator Integration with real SemanticMatcher', () => {
       name: 'Fitness Platinum',
       city: 'Warszawa',
       streetName: 'Targowa',
-      location: { lat: 52.0, lng: 21.0 }
+      location: { lat: 52.0, lng: 21.0 },
     });
     const f2 = mockFacility({
       name: 'CityFit',
       city: 'Warszawa',
       streetName: 'Targowa',
-      location: { lat: 52.0001, lng: 21.0001 }
+      location: { lat: 52.0001, lng: 21.0001 },
     });
 
     const result = await aggregator.combineTwoSets([f1], [f2]);
 
-    assert.strictEqual(result.length, 2, 'Should not have merged distinct gyms');
+    assert.strictEqual(
+      result.length,
+      2,
+      'Should not have merged distinct gyms',
+    );
   });
 });
