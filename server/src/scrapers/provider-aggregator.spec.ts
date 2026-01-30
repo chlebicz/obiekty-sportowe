@@ -10,19 +10,21 @@ jest.mock('./semantic-matcher', () => ({
   SemanticMatcher: {
     getInstance: () => ({
       init: jest.fn().mockResolvedValue(undefined),
-      generateEmbedding: mockGenerateEmbedding
+      generateEmbedding: mockGenerateEmbedding,
     }),
-  }
+  },
 }));
 
 jest.mock('./embedding', () => ({
   __esModule: true,
-  default: jest.fn().mockImplementation(data => {
+  default: jest.fn().mockImplementation((data) => {
     return { similarity: mockCosineSimilarity };
-  })
+  }),
 }));
 
-const mockFacility = (overrides: Partial<CreateFacilityParams>): CreateFacilityParams => ({
+const mockFacility = (
+  overrides: Partial<CreateFacilityParams>,
+): CreateFacilityParams => ({
   name: 'Default Gym',
   streetName: 'Default St',
   streetNumber: '1',
@@ -58,8 +60,14 @@ describe(ProviderAggregator, () => {
   });
 
   it('should merge facilities when similarity is high (>0.90) and location is close', async () => {
-    const f1 = mockFacility({ name: 'Gym A', location: { lat: 50.0, lng: 20.0 } });
-    const f2 = mockFacility({ name: 'Gym A', location: { lat: 50.0001, lng: 20.0001 } });
+    const f1 = mockFacility({
+      name: 'Gym A',
+      location: { lat: 50.0, lng: 20.0 },
+    });
+    const f2 = mockFacility({
+      name: 'Gym A',
+      location: { lat: 50.0001, lng: 20.0001 },
+    });
 
     mockCosineSimilarity.mockReturnValue(0.95);
 

@@ -1,26 +1,29 @@
 import { FacilitiesService } from 'src/facilities/facilities.service';
 import MultisportScraper, {
-  ReadingMultisportFetcher, WritingMultisportFetcher
+  ReadingMultisportFetcher,
+  WritingMultisportFetcher,
 } from './multisport';
 import {
   baseUrl as multisportBaseUrl,
-  multisportActivites, multisportCards, multisportFilters
+  multisportActivites,
+  multisportCards,
+  multisportFilters,
 } from './multisport.config';
 import MedicoverScraper, {
-  ReadingMedicoverFetcher, WritingMedicoverFetcher
+  ReadingMedicoverFetcher,
+  WritingMedicoverFetcher,
 } from './medicover';
 import ProviderAggregator from './provider-aggregator';
 import {
   baseUrl as medicoverBaseUrl,
-  medicoverCards, medicoverFilters,
-  requestDelay as medicoverRequestDelay
+  medicoverCards,
+  medicoverFilters,
+  requestDelay as medicoverRequestDelay,
 } from './medicover.config';
 import { existsSync, rmdirSync } from 'fs';
 
 export default class UpdateHandler {
-  constructor(
-    private facilitiesService: FacilitiesService
-  ) {}
+  constructor(private facilitiesService: FacilitiesService) {}
 
   async insertAll() {
     const hasCache = existsSync('scrapers-output/multisport.json');
@@ -29,30 +32,30 @@ export default class UpdateHandler {
       multisportBaseUrl,
       multisportCards,
       multisportActivites,
-      multisportFilters
+      multisportFilters,
     );
     if (hasCache)
       multisportScraper.setFetcher(
-        new ReadingMultisportFetcher(multisportBaseUrl)
+        new ReadingMultisportFetcher(multisportBaseUrl),
       );
     else
       multisportScraper.setFetcher(
-        new WritingMultisportFetcher(multisportBaseUrl)
+        new WritingMultisportFetcher(multisportBaseUrl),
       );
 
     const medicoverScraper = new MedicoverScraper(
       medicoverBaseUrl,
       medicoverFilters,
       medicoverCards,
-      medicoverRequestDelay
+      medicoverRequestDelay,
     );
     if (hasCache)
       medicoverScraper.setFetcher(
-        new ReadingMedicoverFetcher(medicoverBaseUrl, medicoverCards)
+        new ReadingMedicoverFetcher(medicoverBaseUrl, medicoverCards),
       );
     else
       medicoverScraper.setFetcher(
-        new WritingMedicoverFetcher(medicoverBaseUrl, medicoverCards)
+        new WritingMedicoverFetcher(medicoverBaseUrl, medicoverCards),
       );
 
     console.log('scraping multisport...');
@@ -65,7 +68,8 @@ export default class UpdateHandler {
 
     console.log('combining gathered objects...');
     const aggregatedObjs = await aggregator.combineTwoSets(
-      multisportObjects, medicoverObjects
+      multisportObjects,
+      medicoverObjects,
     );
 
     console.log('emptying current db table...');

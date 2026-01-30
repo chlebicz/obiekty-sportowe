@@ -8,42 +8,46 @@ export interface Location {
 
 class FacilityQueryBuilder extends SelectQueryBuilder<any> {
   whereInBounds(
-    swLat: number, swLng: number, neLat: number, neLng: number
+    swLat: number,
+    swLng: number,
+    neLat: number,
+    neLng: number,
   ): FacilityQueryBuilder {
-    return this
-      .andWhere(`
+    return this.andWhere(
+      `
         ST_Within(
           location,
           ST_MakeEnvelope(:swLng, :swLat, :neLng, :neLat, 4326)
         )
-      `, { swLng, swLat, neLng, neLat });
+      `,
+      { swLng, swLat, neLng, neLat },
+    );
   }
 
-  selectClustered(
-    k: number,
-    from: string
-  ) {
-    return this
-      .addCommonTableExpression(
-        this.createQueryBuilder()
-          .select('LEAST(:k, COUNT(f.*))::int AS k')
-          .setParameters({ k })
-          .from(from, 'f'),
-        'params'
-      )
+  selectClustered(k: number, from: string) {
+    return this.addCommonTableExpression(
+      this.createQueryBuilder()
+        .select('LEAST(:k, COUNT(f.*))::int AS k')
+        .setParameters({ k })
+        .from(from, 'f'),
+      'params',
+    )
       .addCommonTableExpression(
         this.createQueryBuilder()
           .select('f.location, f.id')
-          .addSelect(`
+          .addSelect(
+            `
             ST_ClusterKMeans(
               f.location, (SELECT k FROM params)
             ) OVER () AS cluster_id  
-          `)
+          `,
+          )
           .setParameters({ k })
           .from(from, 'f'),
-        'clustered'
+        'clustered',
       )
-      .select(`
+      .select(
+        `
         CASE
           WHEN COUNT(*) = 1 THEN jsonb_agg(
             jsonb_build_object(
@@ -61,7 +65,8 @@ class FacilityQueryBuilder extends SelectQueryBuilder<any> {
             )
           )
         END AS result  
-      `)
+      `,
+      )
       .from('clustered', 'c')
       .groupBy('cluster_id');
   }
@@ -77,38 +82,39 @@ export class FacilityRepository extends Repository<Facility> {
   }
 
   createQueryBuilder(): FacilityQueryBuilder {
-    return new FacilityQueryBuilder(
-      super.createQueryBuilder()
-    );
+    return new FacilityQueryBuilder(super.createQueryBuilder());
   }
 
   async findOnMap({
     bounds: { swLat, swLng, neLat, neLng },
-    serviceTypes, filters, cards, name
+    serviceTypes,
+    filters,
+    cards,
+    name,
   }: {
     bounds: {
-      swLat: number,
-      swLng: number,
-      neLat: number,
-      neLng: number
-    },
-    serviceTypes: string[],
-    filters: string[],
-    cards: string[],
-    name?: string
+      swLat: number;
+      swLng: number;
+      neLat: number;
+      neLng: number;
+    };
+    serviceTypes: string[];
+    filters: string[];
+    cards: string[];
+    name?: string;
   }) {
     let inBounds = this.createRawQueryBuilder()
-      .select('*').from('facilities', 'f') as FacilityQueryBuilder;
-    
+      .select('*')
+      .from('facilities', 'f') as FacilityQueryBuilder;
+
     inBounds = inBounds
       .whereInBounds(swLat, swLng, neLat, neLng)
       .andWhere('"serviceTypes" @> :serviceTypes::text[]', { serviceTypes })
       .andWhere('filters @> :filters::text[]', { filters })
       .andWhere('cards @> :cards::text[]', { cards });
-    
+
     if (name)
-      inBounds = inBounds
-        .andWhere('similarity(name, :name) > 0.3', { name });
+      inBounds = inBounds.andWhere('similarity(name, :name) > 0.3', { name });
 
     const qb = this.createRawQueryBuilder()
       .addCommonTableExpression(inBounds, 'in_bounds')
@@ -119,21 +125,25 @@ export class FacilityRepository extends Repository<Facility> {
 
   async fullSearch({
     bounds: { swLat, swLng, neLat, neLng },
-    serviceTypes, filters, cards, name,
-    orderBy, page
+    serviceTypes,
+    filters,
+    cards,
+    name,
+    orderBy,
+    page,
   }: {
     bounds: {
-      swLat: number,
-      swLng: number,
-      neLat: number,
-      neLng: number
-    },
-    serviceTypes: string[],
-    filters: string[],
-    cards: string[],
-    name?: string,
-    orderBy: 'name',
-    page: number
+      swLat: number;
+      swLng: number;
+      neLat: number;
+      neLng: number;
+    };
+    serviceTypes: string[];
+    filters: string[];
+    cards: string[];
+    name?: string;
+    orderBy: 'name';
+    page: number;
   }): Promise<Facility[]> {
     const objectsPerPage = 10;
 
@@ -146,9 +156,7 @@ export class FacilityRepository extends Repository<Facility> {
       .offset(objectsPerPage * page)
       .limit(objectsPerPage);
 
-    if (name)
-      qb = qb
-        .andWhere('similarity(name, :name) > 0.3', { name });
+    if (name) qb = qb.andWhere('similarity(name, :name) > 0.3', { name });
 
     return await qb.getMany();
   }

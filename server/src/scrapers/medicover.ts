@@ -21,13 +21,12 @@ export interface AggregatedMedicoverItem extends MedicoverItem {
 export class MedicoverFetcher {
   public constructor(
     private baseUrl: string,
-    private cards: Record<string, number>
+    private cards: Record<string, number>,
   ) {}
 
   private getURLWithCard(baseUrl: string, card: string) {
     const cardNumber = this.cards[card];
-    if (cardNumber === undefined)
-      throw new Error('unknown card type');
+    if (cardNumber === undefined) throw new Error('unknown card type');
 
     return baseUrl + '&category_vid=' + cardNumber;
   }
@@ -43,10 +42,12 @@ export class MedicoverFetcher {
 export class WritingMedicoverFetcher extends MedicoverFetcher {
   async fetchWithCard(card: string): Promise<any[]> {
     const result = await super.fetchWithCard(card);
-    try { await mkdir('scrapers-output'); } catch {}
+    try {
+      await mkdir('scrapers-output');
+    } catch {}
     await writeFile(
       `scrapers-output/medicover-card-${card}.json`,
-      JSON.stringify(result)
+      JSON.stringify(result),
     );
     return result;
   }
@@ -54,9 +55,11 @@ export class WritingMedicoverFetcher extends MedicoverFetcher {
 
 export class ReadingMedicoverFetcher extends MedicoverFetcher {
   async fetchWithCard(card: string): Promise<any[]> {
-    try { await mkdir('scrapers-output'); } catch {}
+    try {
+      await mkdir('scrapers-output');
+    } catch {}
     const fileContents = await readFile(
-      `scrapers-output/medicover-card-${card}.json`
+      `scrapers-output/medicover-card-${card}.json`,
     );
     return JSON.parse(fileContents.toString());
   }
@@ -66,15 +69,14 @@ export class DummyMedicoverFetcher extends MedicoverFetcher {
   constructor(
     cards: Record<string, number>,
     private data: {
-      cards: { [k: string]: any[] }
-    }
+      cards: { [k: string]: any[] };
+    },
   ) {
     super('', cards);
   }
 
   async fetchWithCard(card: string): Promise<any[]> {
-    if (!this.data.cards[card])
-      throw new Error('unknown card type');
+    if (!this.data.cards[card]) throw new Error('unknown card type');
 
     return this.data.cards[card];
   }
@@ -83,9 +85,7 @@ export class DummyMedicoverFetcher extends MedicoverFetcher {
 export class MedicoverTransformer {
   private currentItems = new Map<string, AggregatedMedicoverItem>();
 
-  constructor(
-    private filters: Record<number, string>
-  ) {}
+  constructor(private filters: Record<number, string>) {}
 
   /**
    * Aggregates the provided items fetched for a given card/filter with the
@@ -93,19 +93,11 @@ export class MedicoverTransformer {
    * @param fetchedItems Items fetched from provider given the card/filter
    * @param card Card type that concerns the request
    */
-  aggregateItems(
-    fetchedItems: MedicoverItem[],
-    card: string
-  ) {
+  aggregateItems(fetchedItems: MedicoverItem[], card: string) {
     for (const item of fetchedItems) {
-      const aggregatedItem = this.currentItems.get(item.vid!);
-      if (aggregatedItem)
-        aggregatedItem.cards.push(card);
-      else
-        this.currentItems.set(
-          item.vid,
-          { ...item, cards: [card] }
-        );
+      const aggregatedItem = this.currentItems.get(item.vid);
+      if (aggregatedItem) aggregatedItem.cards.push(card);
+      else this.currentItems.set(item.vid, { ...item, cards: [card] });
     }
   }
 
@@ -118,7 +110,8 @@ export class MedicoverTransformer {
   }
 
   private getSources(item: AggregatedMedicoverItem): {
-    provider: FacilityProvider, externalId: string
+    provider: FacilityProvider;
+    externalId: string;
   }[] {
     return [{ provider: 'medicover', externalId: item.vid }];
   }
@@ -155,7 +148,7 @@ export class MedicoverTransformer {
   }
 
   private getServiceTypes(item: AggregatedMedicoverItem): string[] {
-    return item.services ? item.services.map(s => s.name) : [];
+    return item.services ? item.services.map((s) => s.name) : [];
   }
 
   private getCards(item: AggregatedMedicoverItem) {
@@ -171,7 +164,7 @@ export class MedicoverTransformer {
   }
 
   private getLink(input: string) {
-    return input.startsWith('http') ? input : ('https://' + input);
+    return input.startsWith('http') ? input : 'https://' + input;
   }
 
   private getWebsite(item: AggregatedMedicoverItem): string {
@@ -191,20 +184,19 @@ export class MedicoverTransformer {
   }
 
   private getOpenHours(item: AggregatedMedicoverItem): string[] {
-    if (!item.details.opening_hours)
-      return [];
+    if (!item.details.opening_hours) return [];
 
     const result = ['', '', '', '', '', '', ''];
 
     for (const timeInterval of item.details.opening_hours) {
       const dayNum = parseInt(timeInterval.day) - 1;
-      const interval = timeInterval.start_hour.slice(0, -3)
-        + ' - ' + timeInterval.end_hour.slice(0, -3);
+      const interval =
+        timeInterval.start_hour.slice(0, -3) +
+        ' - ' +
+        timeInterval.end_hour.slice(0, -3);
 
-      if (result[dayNum] !== '')
-        result[dayNum] += ', ' + interval;
-      else
-        result[dayNum] = interval;
+      if (result[dayNum] !== '') result[dayNum] += ', ' + interval;
+      else result[dayNum] = interval;
     }
 
     return result;
@@ -212,7 +204,7 @@ export class MedicoverTransformer {
 
   private isOpen24h(item: AggregatedMedicoverItem): boolean {
     return (item.details?.opening_hours || []).some(
-      (oh: any) => oh.start_hour === '00:00:00' && oh.end_hour === '23:59:00'
+      (oh: any) => oh.start_hour === '00:00:00' && oh.end_hour === '23:59:00',
     );
   }
 
@@ -221,9 +213,7 @@ export class MedicoverTransformer {
   }
 
   private getFilters(item: AggregatedMedicoverItem): string[] {
-    return item.aspects
-      .map(a => this.filters[a.id])
-      .filter(Boolean);
+    return item.aspects.map((a) => this.filters[a.id]).filter(Boolean);
   }
 
   constructDbObject(item: AggregatedMedicoverItem): CreateFacilityParams {
@@ -248,29 +238,22 @@ export class MedicoverTransformer {
       openHours: this.getOpenHours(item),
       open24h: this.isOpen24h(item),
       seasonal: this.isSeasonal(item),
-      filters: this.getFilters(item)
+      filters: this.getFilters(item),
     };
   }
 }
 
 export class MedicoverValidator {
   validateItem(data: any): data is MedicoverItem {
-    if (!data)
-      return false;
-    if (typeof data.vid !== 'string')
-      return false;
-    if (!Array.isArray(data.images))
-      return false;
-    if (!data.address || typeof data.address.city !== 'string')
-      return false;
+    if (!data) return false;
+    if (typeof data.vid !== 'string') return false;
+    if (!Array.isArray(data.images)) return false;
+    if (!data.address || typeof data.address.city !== 'string') return false;
     if (!data.coordinates || !data.coordinates.lat || !data.coordinates.lon)
       return false;
-    if (typeof data.name !== 'string')
-      return false;
-    if (data.services && !Array.isArray(data.services))
-      return false;
-    if (data.aspects && !Array.isArray(data.aspects))
-      return false;
+    if (typeof data.name !== 'string') return false;
+    if (data.services && !Array.isArray(data.services)) return false;
+    if (data.aspects && !Array.isArray(data.aspects)) return false;
 
     return true;
   }
@@ -286,10 +269,8 @@ export class MedicoverValidator {
     const invalid: MedicoverItem[] = [];
 
     for (const item of items) {
-      if (this.validateItem(item))
-        valid.push(item);
-      else
-        invalid.push(item);
+      if (this.validateItem(item)) valid.push(item);
+      else invalid.push(item);
     }
 
     return [valid, invalid];
@@ -309,14 +290,14 @@ export default class MedicoverScraper {
     baseUrl: string,
     filters: Record<number, string>,
     private cards: Record<string, number>,
-    private requestDelay: number
+    private requestDelay: number,
   ) {
     this.fetcher = new MedicoverFetcher(baseUrl, cards);
     this.transformer = new MedicoverTransformer(filters);
   }
 
   private sleep(interval: number) {
-    return new Promise<void>(res => {
+    return new Promise<void>((res) => {
       setTimeout(() => {
         res();
       }, interval);
@@ -332,16 +313,16 @@ export default class MedicoverScraper {
       const [valid, invalid] = this.validator.validateAll(items);
       if (invalid.length > 0)
         console.error(
-          `Medicover scraper (card ${card}): ${invalid.length} invalid objects`
+          `Medicover scraper (card ${card}): ${invalid.length} invalid objects`,
         );
 
       await this.sleep(this.requestDelay);
 
       this.transformer.aggregateItems(valid, card);
     }
-  
+
     const all = this.transformer.getAggregatedItems();
 
-    return all.map(item => this.transformer.constructDbObject(item));
+    return all.map((item) => this.transformer.constructDbObject(item));
   }
 }

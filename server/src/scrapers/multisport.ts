@@ -33,21 +33,23 @@ interface MultisportItem {
       to?: string;
       fromSecond?: string;
       toSecond?: string;
-      closed: boolean
-    }
-  },
-  seasonal_dates?: {
-    from_day: number,
-    from_month: number,
-    to_day: number,
-    to_month: number
-  } | [];
+      closed: boolean;
+    };
+  };
+  seasonal_dates?:
+    | {
+        from_day: number;
+        from_month: number;
+        to_day: number;
+        to_month: number;
+      }
+    | [];
   seasonal_categories?: {
-    from_day: number,
-    from_month: number,
-    to_day: number,
-    to_month: number,
-    categories: string[]
+    from_day: number;
+    from_month: number;
+    to_day: number;
+    to_month: number;
+    categories: string[];
   }[];
   not_standard_opening_hours?: 0 | 1;
   open24h?: 0 | 1;
@@ -58,9 +60,7 @@ interface MultisportItem {
 }
 
 export class MultisportFetcher {
-  public constructor(
-    private baseUrl: string
-  ) {}
+  public constructor(private baseUrl: string) {}
 
   async fetchAll(): Promise<any[]> {
     const res = await fetch(this.baseUrl);
@@ -72,7 +72,9 @@ export class MultisportFetcher {
 export class WritingMultisportFetcher extends MultisportFetcher {
   async fetchAll(): Promise<any[]> {
     const result = await super.fetchAll();
-    try { await mkdir('scrapers-output'); } catch {}
+    try {
+      await mkdir('scrapers-output');
+    } catch {}
     await writeFile('scrapers-output/multisport.json', JSON.stringify(result));
     return result;
   }
@@ -80,7 +82,9 @@ export class WritingMultisportFetcher extends MultisportFetcher {
 
 export class ReadingMultisportFetcher extends MultisportFetcher {
   async fetchAll(): Promise<any[]> {
-    try { await mkdir('scrapers-output'); } catch {}
+    try {
+      await mkdir('scrapers-output');
+    } catch {}
     const fileContents = await readFile('scrapers-output/multisport.json');
     return JSON.parse(fileContents.toString());
   }
@@ -100,12 +104,11 @@ class MultisportTransformer {
   constructor(
     private cards: Record<number, string>,
     private activities: Record<number, string>,
-    private filters: Record<number, string>
+    private filters: Record<number, string>,
   ) {}
 
   private getPostalCode(item: MultisportItem) {
-    if (item.postcode)
-      return item.postcode;
+    if (item.postcode) return item.postcode;
 
     const extractedPostalCode = item.address_full.match(/\d{2}-\d{3}/g);
     if (extractedPostalCode)
@@ -121,18 +124,16 @@ class MultisportTransformer {
     const { address } = item;
 
     const numbersInAddress = address.match(/\d*-*\d+\s*([A-Z,a-z][^\.])*/g);
-    if (!numbersInAddress)
-      return '';
+    if (!numbersInAddress) return '';
 
-    if (numbersInAddress.length === 1)
-      return numbersInAddress[0].trimEnd();
+    if (numbersInAddress.length === 1) return numbersInAddress[0].trimEnd();
 
     return numbersInAddress[numbersInAddress.length - 2].trimEnd();
   }
 
   private getCards(item: MultisportItem) {
     return item.cards_ids
-      ? item.cards_ids.map(card => this.cards[parseInt(card)])
+      ? item.cards_ids.map((card) => this.cards[parseInt(card)])
       : [];
   }
 
@@ -140,11 +141,9 @@ class MultisportTransformer {
     const { address } = item;
 
     const numbersInAddress = address.match(/\d*-*\d+\s*([A-Z,a-z][^\.])*/g);
-    if (!numbersInAddress)
-      return '';
+    if (!numbersInAddress) return '';
 
-    if (numbersInAddress.length === 1)
-      return '';
+    if (numbersInAddress.length === 1) return '';
 
     return numbersInAddress[numbersInAddress.length - 1].trimEnd();
   }
@@ -166,16 +165,13 @@ class MultisportTransformer {
   }
 
   private getOpenHours(item: MultisportItem) {
-    if (!item.hours)
-      return [];
+    if (!item.hours) return [];
 
-    return Object.values(item.hours).map(day => {
-      if (day.closed)
-        return 'Zamknięte';
+    return Object.values(item.hours).map((day) => {
+      if (day.closed) return 'Zamknięte';
 
       const resultParts: string[] = [];
-      if (day.from && day.to)
-        resultParts.push(`${day.from} - ${day.to}`);
+      if (day.from && day.to) resultParts.push(`${day.from} - ${day.to}`);
 
       if (day.fromSecond && day.toSecond)
         resultParts.push(`${day.fromSecond} - ${day.toSecond}`);
@@ -185,27 +181,24 @@ class MultisportTransformer {
   }
 
   private getLink(input: string) {
-    return input.startsWith('http') ? input : ('https://' + input);
+    return input.startsWith('http') ? input : 'https://' + input;
   }
 
   private getPhone(item: MultisportItem) {
     const resultParts: string[] = [];
 
-    if (item.phone)
-      resultParts.push(item.phone);
-    if (item.phone2)
-      resultParts.push(item.phone2);
+    if (item.phone) resultParts.push(item.phone);
+    if (item.phone2) resultParts.push(item.phone2);
 
     return resultParts.join(', ');
   }
 
   private getServiceTypes(item: MultisportItem) {
     // todo: unify the naming (params: filters, service types, cards)
-    if (!item.categories_all_ids)
-      return [];
+    if (!item.categories_all_ids) return [];
 
     return item.categories_all_ids
-      .map(id => this.activities[id])
+      .map((id) => this.activities[id])
       .filter(Boolean);
   }
 
@@ -213,29 +206,25 @@ class MultisportTransformer {
     const { address } = item;
 
     const numbersInAddress = address.match(/\d*-*\d+\s*([A-Z,a-z][^\.])*/g);
-    if (!numbersInAddress)
-      return address;
+    if (!numbersInAddress) return address;
 
     if (numbersInAddress.length === 1)
       return address.split(numbersInAddress[0])[0].trimEnd();
 
-    return address.split(
-      numbersInAddress[numbersInAddress.length - 2]
-    )[0].trimEnd();
+    return address
+      .split(numbersInAddress[numbersInAddress.length - 2])[0]
+      .trimEnd();
   }
 
   private getFilters(item: MultisportItem): string[] {
-    if (!item.parameters_ids)
-      return [];
+    if (!item.parameters_ids) return [];
 
     return item.parameters_ids
-      .map(p => this.filters[parseInt(p)])
+      .map((p) => this.filters[parseInt(p)])
       .filter(Boolean);
   }
 
-  constructDbObject(
-    item: MultisportItem
-  ): CreateFacilityParams {
+  constructDbObject(item: MultisportItem): CreateFacilityParams {
     return {
       cards: this.getCards(item),
       city: item.city,
@@ -253,27 +242,26 @@ class MultisportTransformer {
       phone: this.getPhone(item),
       seasonal: item.is_seasonal || false,
       serviceTypes: this.getServiceTypes(item),
-      sources: [{
-        provider: 'multisport', externalId: String(item.uid)
-      }],
+      sources: [
+        {
+          provider: 'multisport',
+          externalId: String(item.uid),
+        },
+      ],
       streetName: this.getStreetName(item),
       website: item.webpage ? this.getLink(item.webpage) : '',
       filters: this.getFilters(item),
-      district: ''
+      district: '',
     };
   }
 }
 
 class MultisportValidator {
   validateItem(data: any): data is MultisportItem {
-    if (!data.uid || typeof data.uid !== 'number')
-      return false;
-    if (!data.lat || typeof data.lat !== 'number')
-      return false;
-    if (!data.address || typeof data.address !== 'string')
-      return false;
-    if (!data.city || typeof data.city !== 'string')
-      return false;
+    if (!data.uid || typeof data.uid !== 'number') return false;
+    if (!data.lat || typeof data.lat !== 'number') return false;
+    if (!data.address || typeof data.address !== 'string') return false;
+    if (!data.city || typeof data.city !== 'string') return false;
     if (!data.address_full || typeof data.address_full !== 'string')
       return false;
 
@@ -285,10 +273,8 @@ class MultisportValidator {
     const invalid: MultisportItem[] = [];
 
     for (const item of items) {
-      if (this.validateItem(item))
-        valid.push(item);
-      else
-        invalid.push(item);
+      if (this.validateItem(item)) valid.push(item);
+      else invalid.push(item);
     }
 
     return [valid, invalid];
@@ -319,10 +305,8 @@ export default class MultisportScraper {
 
     const [valid, invalid] = this.validator.validateAll(items);
     if (invalid.length > 0)
-      console.error(
-        `Multisport scraper: ${invalid.length} invalid objects`
-      );
+      console.error(`Multisport scraper: ${invalid.length} invalid objects`);
 
-    return valid.map(item => this.transformer.constructDbObject(item));
+    return valid.map((item) => this.transformer.constructDbObject(item));
   }
 }

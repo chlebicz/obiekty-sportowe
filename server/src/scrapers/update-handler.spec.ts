@@ -22,14 +22,14 @@ describe(UpdateHandler, () => {
       providers: [
         {
           provide: getRepositoryToken(FacilityRepository),
-          useValue: {}
-        }
-      ]
+          useValue: {},
+        },
+      ],
     }).compile();
 
     repo = module.get<FacilityRepository>(FacilityRepository);
-  })
-  
+  });
+
   it('yes', () => {
     expect(2 + 2).toEqual(4);
   });
