@@ -49,18 +49,21 @@ export class Facility {
   @Column()
   district?: string;
 
+  @Index({ fulltext: true })
   @Column({
     type: 'text',
     array: true,
   })
   serviceTypes: string[];
 
+  @Index({ fulltext: true })
   @Column({
     type: 'text',
     array: true,
   })
   filters: string[];
 
+  @Index({ fulltext: true })
   @Column({
     type: 'text',
     array: true,
