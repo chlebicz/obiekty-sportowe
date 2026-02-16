@@ -126,14 +126,19 @@ export default class ProviderAggregator {
       let maxScore = -1;
 
       for (const candidate of candidates) {
-        const similarity = itemEmbedding.similarity(candidate.embedding);
         const isGeographicallyClose = this.areLocationsClose(
           item,
           candidate.facility,
         );
 
-        // Heuristic: If similarity is very high (>0.90) AND physically close
-        if (similarity > 0.9 && isGeographicallyClose) {
+        if (!isGeographicallyClose) {
+          continue;
+        }
+
+        const similarity = itemEmbedding.similarity(candidate.embedding);
+
+        // Heuristic: If similarity is very high (>0.90)
+        if (similarity > 0.9) {
           if (similarity > maxScore) {
             maxScore = similarity;
             bestMatch = candidate;
