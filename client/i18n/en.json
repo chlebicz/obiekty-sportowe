@@ -1,4 +1,8 @@
 {
+  "LoadingScreen": {
+    "pleaseWait": "Connecting to the server... This first load might take a minute.",
+    "error": "An unknown error occurred trying to reach the server. Try refreshing the page."
+  },
   "FacilityInfo": {
     "goBack": "Go back",
     "goBackShort": "Go back",

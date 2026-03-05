@@ -1,4 +1,8 @@
 {
+  "LoadingScreen": {
+    "pleaseWait": "Łączenie z serwerem... Pierwsze załadowanie może potrwać około minutę.",
+    "error": "Wystąpił nieznany błąd podczas łączenia się z serwerem. Spróbuj odświeżyć stronę."
+  },
   "FacilityInfo": {
     "goBack": "Wróć do listy",
     "goBackShort": "Wróć",
