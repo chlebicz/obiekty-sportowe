@@ -22,21 +22,21 @@ export default function Home() {
   const t = useTranslations('LoadingScreen');
 
   useEffect(() => {
-    fetch(apiUrl)
-      .then(() => router.push('/map'))
-      .catch(() => setIsError(true));
+    // fetch(apiUrl)
+    //   .then(() => router.push('/map'))
+    //   .catch(() => setIsError(true));
   }, [router]);
 
   if (isError)
     return (
-      <div className='flex justify-center items-center h-screen flex-col gap-3'>
+      <div className='flex justify-center items-center h-screen flex-col gap-3 text-center px-2'>
         <FaceFrownIcon className='w-14 h-14' />
         {t('error')}
       </div>
     );
 
   return (
-    <div className='flex justify-center items-center h-screen flex-col gap-3'>
+    <div className='flex justify-center items-center h-screen flex-col gap-3 text-center px-2'>
       <LoadingSpinner />
       {t('pleaseWait')}
     </div>
