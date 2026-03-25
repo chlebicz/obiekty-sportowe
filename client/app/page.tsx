@@ -22,9 +22,9 @@ export default function Home() {
   const t = useTranslations('LoadingScreen');
 
   useEffect(() => {
-    // fetch(apiUrl)
-    //   .then(() => router.push('/map'))
-    //   .catch(() => setIsError(true));
+    fetch(apiUrl)
+      .then(() => router.push('/map'))
+      .catch(() => setIsError(true));
   }, [router]);
 
   if (isError)
