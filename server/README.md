@@ -8,7 +8,17 @@ Built using NestJS
 $ npm install
 ```
 
-You will also need to provide a configuration file. Create a `config.json` file based on `config-example.json` and fill in your data.
+### Environment variables
+
+| Variable | Description | Default |
+| --- | --- | --- |
+| `DB_HOST` | PostgreSQL host | `localhost` |
+| `DB_PORT` | PostgreSQL port | `5432` |
+| `DB_NAME` | PostgreSQL database name | `obiekty_sportowe` |
+| `DB_USER` | PostgreSQL username | `postgres` |
+| `DB_PASSWORD` | PostgreSQL password | `postgres` |
+| `ALLOWED_ORIGINS` | Comma-separated list of allowed CORS origins | `http://localhost:3000` |
+| `PORT` | HTTP server port | `3001` |
 
 ## Compile and run the project
 

@@ -25,3 +25,30 @@ jobs:
     - name: Run tests
       run: npm test
       working-directory: server
+
+  docker:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Build and start containers
+      run: docker compose up --build -d
+
+    - name: Verify backend, database queries, and frontend
+      run: |
+        for i in {1..30}; do
+          if curl -fsS "http://localhost:3001/facilities/map?nelat=52&nelng=21&swlat=50&swlng=19" >/dev/null \
+            && curl -fsS "http://localhost:3001/facilities/fuzzy-search?input=test" >/dev/null \
+            && curl -fsS "http://localhost:3000" >/dev/null; then
+            echo "All services and database queries are working!"
+            exit 0
+          fi
+          sleep 2
+        done
+        docker compose logs
+        exit 1
+
+    - name: Stop containers
+      if: always()
+      run: docker compose down -v

@@ -3,6 +3,16 @@
 An interactive web application that aggregates data about sports facilities from multiple sources. It displays the facilities on a user-friendly map and supports search and filtering features.
 
 ## Usage
+### Using Docker Compose
+```bash
+docker compose up --build -d
+```
+To populate the database using the scraper inside the running backend container:
+```bash
+docker compose exec backend node dist/scrapers/script.js
+```
+
+### Manual setup
 Check out [client's](client/README.md) and [server's](server/README.md) README files.
 
 ## Live version

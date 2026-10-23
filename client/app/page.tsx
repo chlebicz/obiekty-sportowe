@@ -2,10 +2,9 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-
-import { 'api-url' as apiUrl } from '../config.json';
 import { useTranslations } from 'next-intl';
 import { FaceFrownIcon } from '@heroicons/react/24/outline';
+import ApiClient from './lib/api-client';
 
 const LoadingSpinner = () => {
   return (
@@ -22,7 +21,7 @@ export default function Home() {
   const t = useTranslations('LoadingScreen');
 
   useEffect(() => {
-    fetch(apiUrl)
+    ApiClient.isApiOnline()
       .then(() => router.push('/map'))
       .catch(() => setIsError(true));
   }, [router]);
