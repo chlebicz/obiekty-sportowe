@@ -9,7 +9,11 @@ Built using NextJS.
 $ npm install
 ```
 
-You will also need to provide a configuration file. If you want to run both the server and the client locally, you can just rename `config-example.json` to `config.json` for now.
+### Environment variables
+
+| Variable | Description | Default |
+| --- | --- | --- |
+| `NEXT_PUBLIC_API_URL` | Backend API base URL | `http://localhost:3001` |
 
 ## Compile and run the project
 
