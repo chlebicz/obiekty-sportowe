@@ -16,7 +16,7 @@ docker compose exec backend node dist/scrapers/script.js
 Check out [client's](client/README.md) and [server's](server/README.md) README files.
 
 ## Live version
-Check out [the live version](https://obiekty-sportowe.netlify.app/). It might take a minute before the website starts fully working on first load as the API is hosted on a free service.
+Check out [the live version](https://obiekty.chlebi.cz).
 
 ## Technologies used
 ### Server
