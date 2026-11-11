@@ -16,6 +16,7 @@ export type SortingOption = 'name' | 'distance' | 'rating';
 
 export interface SearchParams {
   mapBounds?: LatLngBounds;
+  zoom?: number;
   searchValue?: string;
   selectedFilters: string[];
   selectedServiceTypes: string[];
@@ -70,6 +71,7 @@ export class FacilitiesService {
       searchValue,
 
       mapBounds,
+      zoom,
 
       selectedCards,
       selectedFilters,
@@ -87,6 +89,7 @@ export class FacilitiesService {
         nelng: ne.lng,
         swlat: sw.lat,
         swlng: sw.lng,
+        zoom: zoom ?? 9,
         name: searchValue,
         cards: selectedCards,
         service_types: selectedServiceTypes,

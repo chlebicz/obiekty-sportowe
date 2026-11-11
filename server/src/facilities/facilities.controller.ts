@@ -64,6 +64,7 @@ export class FacilitiesController {
     @Query('nelat', ParseFloatPipe) northEastLat: number,
     @Query('swlng', ParseFloatPipe) southWestLng: number,
     @Query('swlat', ParseFloatPipe) southWestLat: number,
+    @Query('zoom', ParseFloatPipe) zoom: number,
   ) {
     // little workaround
     if (typeof cards === 'string') cards = [cards];
@@ -79,6 +80,7 @@ export class FacilitiesController {
       filters,
       serviceTypes,
       cards,
+      zoom,
     });
 
     return {

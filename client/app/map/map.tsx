@@ -94,10 +94,10 @@ export default function MapContents() {
   } = useContext(DataContext);
   const objects = useFacilities(searchParams);
 
-  const { setMapBounds } = searchParams;
+  const { setMapBounds, setZoom, zoom } = searchParams;
 
   const defaultZoom = 9;
-  const [zoom, setZoom] = useState(defaultZoom);
+  const currentZoom = zoom ?? defaultZoom;
 
   const defaultCenter = { lat: 52.2297, lng: 21.0122 }; // Warsaw
   const [center, setCenter] = useState(defaultCenter);
@@ -119,12 +119,13 @@ export default function MapContents() {
   return (
     <div className='flex-1'>
       <MapWrapper
-        zoom={zoom}
+        zoom={currentZoom}
         center={center}
         eventHandlers={{
           dragend: handleBoundsChange,
           zoomend: handleBoundsChange,
           ready: (e: LeafletEvent) => {
+            setZoom(e.target.getZoom());
             setMapBounds(toBounds(e.target.getBounds()));
           }
         }}

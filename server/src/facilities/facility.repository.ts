@@ -104,7 +104,7 @@ export class FacilityRepository extends Repository<Facility> {
     name?: string;
   }) {
     let inBounds = this.createRawQueryBuilder()
-      .select('*')
+      .select('id, location')
       .from('facilities', 'f') as FacilityQueryBuilder;
 
     inBounds = inBounds
@@ -116,11 +116,7 @@ export class FacilityRepository extends Repository<Facility> {
     if (name)
       inBounds = inBounds.andWhere('similarity(name, :name) > 0.3', { name });
 
-    const qb = this.createRawQueryBuilder()
-      .addCommonTableExpression(inBounds, 'in_bounds')
-      .selectClustered(20, 'in_bounds');
-
-    return (await qb.execute()).map((o: any) => o.result);
+    return await inBounds.execute();
   }
 
   async fullSearch({
