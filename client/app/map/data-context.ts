@@ -8,6 +8,7 @@ export const DataContext = createContext<{
   setSelectedFacility: SetState<number | undefined>,
   searchParams: SearchParams & {
     setMapBounds: SetState<LatLngBounds | undefined>,
+    setZoom: SetState<number | undefined>,
     setSearchValue: SetState<string>,
     setSelectedFilters: SetState<string[]>,
     setSelectedServiceTypes: SetState<string[]>,

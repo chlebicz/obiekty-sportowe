@@ -18,6 +18,7 @@ export default function MapPage() {
   );
 
   const [mapBounds, setMapBounds] = useState<LatLngBounds>();
+  const [zoom, setZoom] = useState<number | undefined>();
 
   const [searchValue, setSearchValue] = useState('');  
   const [sortingOption, setSortingOption] = useState<SortingOption>('name');
@@ -37,6 +38,7 @@ export default function MapPage() {
           selectedFacility, setSelectedFacility,
           searchParams: {
             mapBounds, setMapBounds,
+            zoom, setZoom,
 
             searchValue, setSearchValue,
 

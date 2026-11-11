@@ -34,6 +34,7 @@
     "pg": "^8.16.3",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "supercluster": "^9.1.0",
     "typeorm": "^0.3.26"
   },
   "devDependencies": {
@@ -46,6 +47,7 @@
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^22.10.7",
+    "@types/supercluster": "^7.1.3",
     "@types/supertest": "^6.0.2",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
@@ -79,7 +81,7 @@
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
     "transformIgnorePatterns": [
-      "/node_modules/(?!@xenova)"
+      "/node_modules/(?!(@xenova|supercluster|kdbush)/)"
     ]
   }
 }

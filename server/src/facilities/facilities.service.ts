@@ -5,6 +5,7 @@ import {
   Facility,
   FacilityProvider,
 } from './facility.entity';
+import Supercluster from 'supercluster';
 
 export type CreateFacilityParams = {
   name: string;
@@ -40,6 +41,7 @@ export class FacilitiesService {
     serviceTypes,
     cards,
     bounds: { northEast, southWest },
+    zoom
   }: {
     bounds: {
       northEast: Location;
@@ -49,6 +51,7 @@ export class FacilitiesService {
     filters?: string[];
     cards?: string[];
     name?: string;
+    zoom: number;
   }) {
     const raw = await this.facilitiesRepo.findOnMap({
       bounds: {
@@ -63,19 +66,40 @@ export class FacilitiesService {
       name,
     });
 
-    return raw.map((rawObj) => {
-      const [lng, lat] = rawObj.value.location.coordinates;
-      const { count, id } = rawObj.value;
+    const index = new Supercluster({
+      radius: 40,
+      maxZoom: 16
+    });
 
-      if (rawObj.type === 'cluster')
+    const points = raw.map(obj => ({
+      type: 'Feature',
+      properties: { id: obj.id },
+      geometry: {
+        type: 'Point',
+        coordinates: obj.location.coordinates
+      }
+    })) as any;
+
+    index.load(points);
+
+    const clusters = index.getClusters(
+      [southWest.lng, southWest.lat, northEast.lng, northEast.lat],
+      zoom
+    );
+
+    return clusters.map((cluster) => {
+      const [lng, lat] = cluster.geometry.coordinates;
+      const props = cluster.properties;
+
+      if (props.cluster)
         return {
           type: 'cluster',
-          value: { count, location: { lng, lat } },
+          value: { count: props.point_count, location: { lng, lat } },
         };
 
       return {
         type: 'singleton',
-        value: { id, location: { lng, lat } },
+        value: { id: props.id, location: { lng, lat } },
       };
     });
   }

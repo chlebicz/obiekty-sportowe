@@ -21,6 +21,7 @@ export default function useMapFacilities(params: Partial<SearchParams>) {
   }, [
     params.searchValue,
     params.mapBounds,
+    params.zoom,
     params.selectedCards,
     params.selectedFilters,
     params.selectedServiceTypes,
